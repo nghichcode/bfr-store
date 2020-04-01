@@ -8,11 +8,14 @@ import React from 'react';
 import {
   View,
   Text,
+  SafeAreaView,
+  StatusBar,
+  FlatList,
   // Button
 } from 'react-native';
-import {Button, SearchBar} from 'react-native-elements';
+import {Button, SearchBar, ListItem, Divider} from 'react-native-elements';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-// import Icon from 'react-native-vector-icons/FontAwesome';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -26,6 +29,7 @@ class Home extends React.Component {
   }
 
   updateSearch = search => {
+  	// console.log(1);
     this.setState({search});
   };
 
@@ -34,41 +38,16 @@ class Home extends React.Component {
     const {navigation} = this.props;
     return (
       <View>
-        <View style={{
-          flex: 1,
+        <SearchBarATC onChangeText={this.updateSearch} />
+        {search==='' &&
+        (<View><View style={{
           backgroundColor: '#CCC',
-          flexDirection: "row",
-          flexWrap: 'wrap',
           paddingHorizontal: '2%',
-          paddingTop: 2
+          paddingTop: 5,
         }}>
-          <View style={{flex: 10,}}>
-            <SearchBar
-              lightTheme={true}
-              placeholder="Type Here..."
-              onChangeText={this.updateSearch}
-              value={search}
-            />
-          </View>
-          <View style={{flex: 2, backgroundColor: '#FCF'}}>
-            <Text style={{
-              borderTopWidth: 1,
-              borderBottomWidth: 1,
-              borderBottomColor: '#000',
-              borderTopColor: '#000',
-              padding: 8,
-              backgroundColor: '#CBC',
-
-              borderBottomWidth: 0,
-              borderRadius: 3,
-              overflow: 'hidden',
-              minHeight: 30,
-
-            }}
-            ><Ionicons name='ios-barcode' size={30} color='#000'/></Text>
-          </View>
+        	<Text>Abc</Text>
         </View>
-        <View>
+        <View style={{paddingTop: 5,}}>
           <Button
             title="Go to Jane's profile"
             onPress={() => navigation.navigate('Profile', {name: 'Jane'})}
@@ -92,7 +71,7 @@ class Home extends React.Component {
               {this.state.search}
             </Text>
           </View>
-        </View>
+        </View></View>)}
       </View>
     );
   }
@@ -162,8 +141,158 @@ function Nest() {
   );
 }
 
+class SearchBarATC extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+    	search: '',
+      isEmpty: true,
+      list: [
+			  {
+			    name: 'Amy Farha Farha Farha Farha Farha',
+			    img_url: 'https://s3.amazonaws.com/uifaces/faces/twitter/ladylexy/128.jpg',
+			    store_name: 'Vice President President President President',
+			    distance: 100,
+			  },
+			  {
+			    name: 'Amy Farha Farha Farha Farha Farha',
+			    img_url: 'https://s3.amazonaws.com/uifaces/faces/twitter/ladylexy/128.jpg',
+			    store_name: 'Vice President President President President',
+			    distance: 100,
+			  },
+			  {
+			    name: 'Chris Jackson',
+			    img_url: 'https://s3.amazonaws.com/uifaces/faces/twitter/adhamdannaway/128.jpg',
+			    store_name: 'Vice Chairman',
+			    distance: 200,
+			  },
+			  {
+			    name: 'Amy Farha Farha Farha Farha Farha',
+			    img_url: 'https://s3.amazonaws.com/uifaces/faces/twitter/ladylexy/128.jpg',
+			    store_name: 'Vice President President President President',
+			    distance: 100,
+			  },
+			  {
+			    name: 'Chris Jackson',
+			    img_url: 'https://s3.amazonaws.com/uifaces/faces/twitter/adhamdannaway/128.jpg',
+			    store_name: 'Vice Chairman',
+			    distance: 200,
+			  },
+			  {
+			    name: 'Amy Farha Farha Farha Farha Farha',
+			    img_url: 'https://s3.amazonaws.com/uifaces/faces/twitter/ladylexy/128.jpg',
+			    store_name: 'Vice President President President President',
+			    distance: 100,
+			  },
+			  {
+			    name: 'Chris Jackson',
+			    img_url: 'https://s3.amazonaws.com/uifaces/faces/twitter/adhamdannaway/128.jpg',
+			    store_name: 'Vice Chairman',
+			    distance: 200,
+			  },
+			  {
+			    name: 'Kama Jackson',
+			    img_url: 'https://s3.amazonaws.com/uifaces/faces/twitter/adhamdannaway/128.jpg',
+			    store_name: 'Kamara',
+			    distance: 300,
+			  },
+			  {
+			    name: 'Amy Farha Farha Farha Farha Farha',
+			    img_url: 'https://s3.amazonaws.com/uifaces/faces/twitter/ladylexy/128.jpg',
+			    store_name: 'Vice President CC',
+			    distance: 100,
+			  },
+			  {
+			    name: 'Amy Farha Farha Farha Farha Farha',
+			    img_url: 'https://s3.amazonaws.com/uifaces/faces/twitter/ladylexy/128.jpg',
+			    store_name: 'Vice President CC',
+			    distance: 100,
+			  },
+		  ],
+
+    };
+  }
+
+  onChangeText = text => {
+    this.props.onChangeText(text);
+    this.setState({isEmpty: text === '',search: text});
+  };
+
+	render() {
+  	const {search} = this.state;
+		return (
+    <View style={{backgroundColor: '#fff', flex:0}}>
+    	<View>
+	      <View style={{width: '90%'}}>
+	        <SearchBar
+	          lightTheme={true}
+	          placeholder="Type Here..."
+	          containerStyle={{backgroundColor: '#fff',borderTopWidth: 1,borderBottomWidth: 1,borderBottomColor: '#ddd',borderTopColor: '#ddd',}}
+	          inputContainerStyle={{backgroundColor: '#eee'}}
+	          onChangeText={this.onChangeText}
+	          value={search}
+	        />
+	      </View>
+	      <View style={{
+	        position: 'absolute',
+	        right: 0, top: 0, width: '10%', height: '100%',
+	        flex: 1,flexDirection: 'row',justifyContent: 'center',alignItems: 'center',
+	        backgroundColor: '#fff',borderTopWidth: 1,borderBottomWidth: 1,borderBottomColor: '#ddd',borderTopColor: '#ddd',
+	      }}>
+	        <Button
+	          title=""
+	          onPress={() => {console.log(123);}}
+						icon={<Icon name='qrcode' size={40} color='#000'/>}
+						type="clear"
+						buttonStyle={{padding:0, margin:0,marginRight:3}}
+	        />
+	      </View>
+      </View>
+      { !this.state.isEmpty &&
+      (
+      	<FlatList
+      		initialNumToRender={this.state.list.length}
+		      keyExtractor={(item, index) => index.toString()}
+		      data={this.state.list}
+		      renderItem={({ item, index }) => (
+					  <ListItem
+					    title={this.state.search}
+					    rightTitle={<Text><Icon name='check' size={10} color='tomato'/><Icon name='star' size={10} color='tomato'/></Text>}
+					    subtitle={item.store_name}
+					    rightSubtitle={this.state.list.length+'m'}
+					    leftAvatar={{ source: { uri: item.img_url } }}
+					    badge={{ value: '300.0000', status: "error" }}
+					    bottomDivider
+					    chevron
+					    onPress={() => {console.log(item.name);}}
+					  />
+					)}
+		    />
+      )
+      }
+    </View>
+		);
+	}
+}
+// <Text style={{marginRight:2}}>
+	// <Icon name='qrcode' size={40} color='#000'/>
+// </Text>
+
 class App extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      search: '',
+    };
+  }
+
+  updateSearch = search => {
+    this.setState({search});
+  };
+
   render() {
+  	// const {search} = this.state;
+  	// const updateSearch = this.updateSearch;
     return (
       <NavigationContainer>
         <Stack.Navigator>
@@ -174,22 +303,7 @@ class App extends React.Component {
               title: 'Welcome', headerShown: true,
               header: ({scene, previous, navigation}) => {
                 return (
-                  <View style={{backgroundColor: '#CCC'}}>
-                    <View style={{width: '90%'}}>
-                      <SearchBar
-                        lightTheme={true}
-                        placeholder="Type Here..."
-                      />
-                    </View>
-                    <View style={{
-                      position: 'absolute',
-                      right: 0, top: 0, width: '10%', height: '100%',
-                      backgroundColor: '#e6e8ec'
-                    }}>
-                      <Text style={{marginVertical: 12}}
-                      ><Ionicons name='ios-barcode' size={30} color='#000'/></Text>
-                    </View>
-                  </View>
+                	<View/>
                 );
               },
             }}
