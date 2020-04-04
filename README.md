@@ -32,3 +32,15 @@ Mọi món hàng được đăng công khai sẽ được kiểm duyệt bởi c
 | 9 | Kiểm duyệt thông tin hàng hóa (Admin) | Trang để admin có thể kiểm duyệt thông tin hàng hóa |
 | 10 | Thông tin tài khoản | Dùng để xem/cập nhật thông tin tài khoản hoặc "Đăng xuất" khỏi hệ thống. |
 
+#
+##### Triển khai:
+
+|STT| Trang | API | Mô tả|
+|---|-------|-----|------|
+| 1.1 | Admin | [ ] - Get permission_token | - Lấy token để cấp phép cho việc tạo tài khoản admin |
+| 1.2 | Admin | [ ] - Duyệt/Hủy sản phẩm | - Admin gửi yêu cầu duyệt hàng hóa tới hệ thống |
+| 2.1 | Store | [ ] - Add | Store gửi yêu cầu để tạo sản phẩm riêng của store lưu vào bảng store_product |
+| 3.1 | Search | [ ] - Search | Tìm kiếm thông tin hàng hóa bằng tên hoặc mã gtin  |
+| 3.2 | Search | [ ] - Thêm mới | Người dùng bất kỳ thêm mới sản phẩm vào bảng product |
+| 4.1 | User Detail | [ ] - Cập nhật thông tin | Cập nhật location,hide_location,hide_detail,description |
+
