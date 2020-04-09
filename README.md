@@ -13,7 +13,7 @@
 >**Công nghệ: React Native, PHP (CodeIgniter)**
 
 ##### Giới thiệu chung :
-***_BFR Store_** là một ứng dụng nhỏ giúp cho mọi người dùng có thể tra cứu thông tin về hàng hóa (giá cả, hàng thật/giả, nơi sản xuất,...).
+***_BFR Store_** là một ứng dụng nhỏ giúp cho mọi người dùng có thể tra cứu thông tin về hàng hóa (giá cả, hàng thật/giả, nơi sản xuất,...) _**chỉ bằng một nút quét QR**_.
 Ngoài ra, người dùng còn có thể kiểm tra thông tin cụ thể các món hàng ở trong các cửa hàng (số lượng sản phẩm, giá tiền) đã công khai thông tin, tìm kiếm cửa hàng ở gần có bán món hàng mà người mua cần.
 Riêng với từng "_chủ cửa hàng_", họ có thể lưu trữ các thông tin về hàng hóa để có thể dễ dàng tra cứu, tính toán, quản lý và có thể công khai một số thông tin về các món hàng để người dùng có thể tiếp cận các món hàng đó.
 Mọi món hàng được đăng công khai sẽ được kiểm duyệt bởi các admin.
