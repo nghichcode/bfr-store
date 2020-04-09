@@ -5,11 +5,11 @@
 >Giảng viên: Nguyễn Việt Tân
 >  
 > Các thành viên:
->* Nguyễn Văn Diên  
+>* Nguyễn Văn Diên (trưởng nhóm)  
 >* Lê Duy Hưng  
 >* Ninh Thị Nhật Lệ
 >
->##### Đề tài: Ứng dụng tra cứu thông tin hàng hoá
+>##### Đề tài: Ứng dụng tra cứu thông tin và quản lý hàng hoá
 >**Công nghệ: React Native, PHP (CodeIgniter)**
 
 ##### Giới thiệu chung :

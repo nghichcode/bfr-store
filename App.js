@@ -17,6 +17,9 @@ import {Button, SearchBar, ListItem, Divider} from 'react-native-elements';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
+import Login from './app/components/login.js';
+
+
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
@@ -330,4 +333,4 @@ class App extends React.Component {
 }
 
 
-export default App;
+export default Login;
