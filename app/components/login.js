@@ -34,7 +34,7 @@ class Login extends React.Component {
 	    iv : data.iv,
 	    password: password,
 	    username: this.state.username,
-	    this.state.regdata
+	    ...this.state.regdata
   	}
   	
 		fetch(config.getLocation('auth/login/'), {

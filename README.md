@@ -43,7 +43,8 @@ Mọi món hàng được đăng công khai sẽ được kiểm duyệt bởi c
 | 1.1 | Admin | [ ] Get permission_token | Lấy token để cấp phép cho việc tạo tài khoản admin(bảng bfs_permission) |
 | 1.2 | Admin | [ ] Duyệt/Hủy sản phẩm | Admin gửi yêu cầu duyệt hàng hóa tới hệ thống(bảng bfs_product) |
 | 1.3 | Admin | [ ] Sửa thông tin sản phẩm | Admin gửi yêu cầu sửa tới hệ thống(bảng bfs_product) |
-| 2.1 | Store | [ ] Add | Store gửi yêu cầu để tạo sản phẩm riêng của store lưu vào bảng bfs_store_product |
+| 2.1 | Store | [ ] Add | Store tạo sản phẩm riêng của store lưu vào bảng bfs_store_product |
+| 3.3 | Store | [ ] Sửa/Xóa | Store sửa/Xóa sản phẩm riêng của store lưu vào bảng bfs_store_product |
 | 3.1 | Search | [ ] Search | Tìm kiếm thông tin hàng hóa bằng tên hoặc mã gtin (bfs_product, bfs_store_product) |
 | 3.2 | Search | [ ] Thêm mới | Người dùng bất kỳ thêm mới sản phẩm vào bảng bfs_product |
 | 4.1 | User Detail | [ ] Cập nhật thông tin | Cập nhật first_name,last_name,email vầo bảng bfs_user  |
