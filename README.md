@@ -40,13 +40,14 @@ Mọi món hàng được đăng công khai sẽ được kiểm duyệt bởi c
 |---|-------|-----|------|
 | 0.1 | Đăng nhập | [x] Login | Đăng nhập hệ thống |
 | 0.2 | Đăng ký | [x] Login | Lưu vào bảng bfs_user, và lưu tiếp vào bfs_store đối với cửa hàng |
-| 1.1 | Admin | [ ] Get permission_token | Lấy token để cấp phép cho việc tạo tài khoản admin(bảng bfs_permission) |
-| 1.2 | Admin | [ ] Duyệt/Hủy sản phẩm | Admin gửi yêu cầu duyệt hàng hóa tới hệ thống(bảng bfs_product) |
-| 1.3 | Admin | [ ] Sửa thông tin sản phẩm | Admin gửi yêu cầu sửa tới hệ thống(bảng bfs_product) |
-| 2.1 | Store | [ ] Add | Store tạo sản phẩm riêng của store lưu vào bảng bfs_store_product |
-| 3.3 | Store | [ ] Sửa/Xóa | Store sửa/Xóa sản phẩm riêng của store lưu vào bảng bfs_store_product |
-| 3.1 | Search | [ ] Search | Tìm kiếm thông tin hàng hóa bằng tên hoặc mã gtin (bfs_product, bfs_store_product) |
+| 1.1 | Admin | [x] Get permission_token | Lấy token để cấp phép cho việc tạo tài khoản admin(bảng bfs_permission) |
+| 1.2 | Admin | [0.8] Duyệt/Hủy sản phẩm | Admin gửi yêu cầu duyệt hàng hóa tới hệ thống(bảng bfs_product) |
+| 1.3 | Admin | [0.8] Sửa thông tin sản phẩm | Admin gửi yêu cầu sửa tới hệ thống(bảng bfs_product) |
+| 2.1 | Store | [0.8] Add | Store tạo sản phẩm riêng của store lưu vào bảng bfs_store_product |
+| 3.3 | Store | [0.8] Sửa/Xóa | Store sửa/Xóa sản phẩm riêng của store lưu vào bảng bfs_store_product |
+| 3.1 | Search | [ ] Search | Tìm kiếm thông tin hàng hóa bằng tên hoặc mã gtin (bfs_product, bfs_store_product). Có thêm tham số (limit, offset)-(giới hạn số lương sản phẩm, lấy từ sản phẩm thứ). Ví dụ : Lấy từ 10 sản phẩm, tính từ sản phẩm thứ 5 => LIMIT 5, 10. Và ngoài trả về các sản phẩm cần trả về thêm total là tổng sản phẩm query được. |
 | 3.2 | Search | [ ] Thêm mới | Người dùng bất kỳ thêm mới sản phẩm vào bảng bfs_product |
+| 3.2.1 | Search | [ ] Thêm ảnh | Người dùng bất kỳ thêm mới sản phẩm vào bảng bfs_product sẽ truyền cả ảnh vào |
 | 4.1 | User Detail | [ ] Cập nhật thông tin | Cập nhật first_name,last_name,email vầo bảng bfs_user  |
 | 4.2 | User Detail | [ ] Cập nhật thông tin | Cập nhật location,hide_location,hide_detail,description vào bảng bfs_store |
 

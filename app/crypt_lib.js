@@ -12,22 +12,21 @@ function CryptoJSAesEncrypt(passphrase, plain_text){
         salt : CryptoJS.enc.Hex.stringify(salt),
         iv : CryptoJS.enc.Hex.stringify(iv)    
     }
-    return JSON(data);
+    return data;
 }
-function CryptoJSAesDecrypt(passphrase,obj_json){
+function CryptoJSAesDecrypt(passphrase, obj_json){
     var encrypted = obj_json.ciphertext;
     var salt = CryptoJS.enc.Hex.parse(obj_json.salt);
     var iv = CryptoJS.enc.Hex.parse(obj_json.iv);   
-
     var key = CryptoJS.PBKDF2(passphrase, salt, { hasher: CryptoJS.algo.SHA512, keySize: 64/8, iterations: 999});
 
     var decrypted = CryptoJS.AES.decrypt(encrypted, key, { iv: iv});
-
     return decrypted.toString(CryptoJS.enc.Utf8);
 }
 
-function hash(data, time){
-    return CryptoJS.SHA256(data).toString(CryptoJS.enc.Base64);
+function hash(data, time=''){
+    const crypt=CryptoJS.SHA256(data).toString()
+    return crypt+(time?('::'+time):'');
 }
 
 const crypt_lib = {
