@@ -1,7 +1,4 @@
 {
   "name": "RN20",
-  "description": "BFR Store. Enjoy.",
-  "slug": "bfr_store",
-  "displayName": "RN20",
-  "icon": "app/assets/shop.svg",
+  "displayName": "RN20"
 }

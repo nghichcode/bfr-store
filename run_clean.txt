@@ -1,0 +1,4 @@
+cd android/
+gradlew assembleDebug
+cd ../
+npm start --reset-cache

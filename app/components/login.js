@@ -1,14 +1,12 @@
 import React from 'react';
-import { useFocusEffect } from '@react-navigation/native';
 import { StyleSheet, View, TextInput, TouchableOpacity, ScrollView,StatusBar,Alert } from 'react-native';
 import {Text,Overlay,CheckBox,Input} from 'react-native-elements';
 
-const Realm = require('realm');
-
-import { saveToken,getToken } from '../models/model_utils.js';
-import { TokenSchema } from '../models/models.js';
+import { saveUser,saveToken } from '../models/model_utils.js';
+import { StoreObj,TokenObj } from '../models/models.js';
 import config from '../config.js';
 import crypt_lib from '../crypt_lib.js';
+
 
 function parseForm(params) {
   var formData = new FormData();
@@ -23,8 +21,6 @@ class Login extends React.Component {
     this.state = {
       is_register: false,
       processing: false,
-      loading:true,
-      realm: null,
 			username:"adminf",
 	    password:"abcabc",
 	    repassword:"",
@@ -41,48 +37,6 @@ class Login extends React.Component {
     };
   }
 
-  componentDidMount() {
-    const {navigation} = this.props;
-    Realm.open({schema: [TokenSchema],schemaVersion: config.schemaVersion})
-    .then(realm => {
-      this.setState({ realm });
-      // realm.write(() => {realm.delete(realm.objects(TokenSchema.name));});
-      // console.log('MOUNT',realm.objects(TokenSchema.name));
-      const token = getToken(realm);
-      fetch(config.getLocation('auth/validate/'), {
-        headers: { 'Authorization': token.token, },method: 'POST',body: '',
-      })
-      .then((response) => {
-        return response.json();
-      })
-      .then((json) => {
-        this.setState({loading:false});console.log('json',json);
-        if(!json.error){navigation.navigate('Home');}
-      })
-      .catch((error) => {
-        this.setState({loading:false});console.log(error);
-      });
-    })
-    .catch(error => {
-      this.setState({loading:false});console.log(error);
-    });
-  }
-  componentWillUnmount() {
-    const {realm} = this.state;
-    if (realm !== null && !realm.isClosed) {
-      realm.close();
-    }
-  }
-
-  openDB = () => {
-    if (this.state.realm !== null && !this.state.realm.isClosed) {return;}
-    Realm.open({schema: [TokenSchema],schemaVersion: config.schemaVersion})
-    .then(realm => { this.setState({ realm }); })
-    .catch(error => {
-      this.setState({processing:false});
-      Alert.alert("Lỗi", error.message,[{text: "OK", onPress: () => null}],{ cancelable: false });
-    });
-  }
   handleSignUp = () => {
     const {username, password, repassword, regdata} = this.state;
     if (!password || !username) {
@@ -92,7 +46,6 @@ class Login extends React.Component {
       Alert.alert("Lỗi", 'Mật khẩu đã nhập không khớp.',[{text: "OK"}],{ cancelable: false });return;
     }
     this.setState({processing:true});
-    this.openDB();
     const time = Math.floor(new Date()/1000);
     const hpassword = crypt_lib.hash(password, time);
     const data = crypt_lib.encrypt(config.encryption_key, hpassword);
@@ -117,12 +70,9 @@ class Login extends React.Component {
       return response.json();
     })
     .then((json) => {
-      console.log(json);
       if(json.error) {
         Alert.alert("Lỗi", json.message+' : '+json.code,[{text: "OK"}],{ cancelable: false });
       } else {
-        saveToken(this.state.realm, json);
-        this.setState({is_register:false});
         Alert.alert("Thông báo", "Đăng ký thành công. Vui Lòng đăng nhập.",[{text: "OK"}],{ cancelable: false });
       }
     })
@@ -132,13 +82,26 @@ class Login extends React.Component {
     });
   }
 
+  handleGuestLogin = () => {
+    this.setState({processing:true});
+
+    const time = Math.floor(new Date()/1000);
+    const hash_token = crypt_lib.hash('BFRS'+'::'+config.encryption_key+'::'+time);
+    
+    const tokens = TokenObj; tokens.mapobj({ token: hash_token,refresh_token: '' });
+    const store = StoreObj;
+    const {realm} = this.props;
+    saveUser(realm, {tokens,store});
+    this.setState({processing:false});
+    this.props.setLogin(true);
+  }
+
   handleLogin = () => {
     const {username, password} = this.state;
     if (!password || !username) {
       Alert.alert("Lỗi", 'Vui lòng nhập đủ thông tin.',[{text: "OK"}],{ cancelable: false });return;
     }
     this.setState({processing:true});
-    this.openDB();
     const time = Math.floor(new Date()/1000);
     const hpassword = crypt_lib.hash(password);
     const data = crypt_lib.encrypt(config.encryption_key, hpassword);
@@ -165,8 +128,9 @@ class Login extends React.Component {
       if(json.error) {
         Alert.alert("Lỗi", json.message+' : '+json.code,[{text: "OK"}],{ cancelable: false });
       } else {
-        saveToken(this.state.realm, json);
-        this.props.navigation.navigate('Home');
+        const {realm} = this.props;
+        saveUser(realm, json);
+        this.props.setLogin(true);
       }
     })
     .catch((error) => {
@@ -184,14 +148,6 @@ class Login extends React.Component {
 
 	render() {
     const {regdata,permission} = this.state;
-    if (this.state.loading) {
-      return(
-        <View style={{flex: 1, flexDirection: 'column',justifyContent: 'center',}}>
-            <Text style={{fontWeight:"bold",fontSize:40,color:"#fb5b5a",textAlign:'center'}}>Loadding...</Text>
-        </View>
-      );
-    }
-
 		return (
     <View style={styles.container}>
       <StatusBar backgroundColor="#ff9800" />
@@ -292,7 +248,7 @@ class Login extends React.Component {
               <Text style={styles.white}>SIGN UP</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => this.setState({ is_register: false })}
-              style={[styles.loginBtn,styles.red,styles.w80p]}>
+              style={[styles.loginBtn,styles.bgred,styles.w80p]}>
               <Text style={styles.white}>CLOSE</Text>
             </TouchableOpacity>
           </View>
@@ -317,13 +273,19 @@ class Login extends React.Component {
           onChangeText={text => this.setState({password:text})}/>
       </View>
       <TouchableOpacity>
-        <Text style={{color:"#9c27b0",fontSize:12}}>Quên mật khẩu?</Text>
+        <Text style={{color:"#8c27b0",fontSize:12}}>Quên mật khẩu?</Text>
       </TouchableOpacity>
-      <TouchableOpacity onPress={this.handleLogin} style={[styles.loginBtn,styles.mt40,styles.red,styles.w80p]}>
+      <TouchableOpacity onPress={this.handleLogin} style={[styles.loginBtn,styles.mt40,styles.bgred,styles.w80p]}>
         <Text style={{ color:"#ffffff" }}>ĐĂNG NHẬP</Text>
       </TouchableOpacity>
-      <TouchableOpacity onPress={text => this.setState({is_register:true,password:'',repassword:''})}>
-        <Text style={{ color:"#673ab7" }}>ĐĂNG KÝ</Text>
+      <TouchableOpacity
+        onPress={text => this.setState({is_register:true,password:'',repassword:''})}
+        style={[styles.loginBtn,styles.bgwarning,styles.w80p]}
+      >
+        <Text style={{ color:"#ffffff" }}>ĐĂNG KÝ</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={this.handleGuestLogin}>
+        <Text style={{ color:"#9c27b0" }}>GUEST</Text>
       </TouchableOpacity>
     </View>
 		);
@@ -368,7 +330,8 @@ const styles = StyleSheet.create({
   },
   orange:{color:'#ffa184'},
   success:{backgroundColor:"#8bc34a"},
-  red: {backgroundColor:"#fb5b5a",},
+  bgred: {backgroundColor:"#fb5b5a",},
+  bgwarning: {backgroundColor:"#ff9800",},
   white: {color:"#ffffff"},
   center:{alignItems:'center',textAlign:'center'},
 });
