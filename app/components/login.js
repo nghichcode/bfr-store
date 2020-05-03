@@ -2,26 +2,24 @@ import React from 'react';
 import { StyleSheet, View, TextInput, TouchableOpacity, ScrollView,StatusBar,Alert } from 'react-native';
 import {Text,Overlay,CheckBox,Input} from 'react-native-elements';
 
-import { saveUser,saveToken } from '../models/model_utils.js';
+import * as ImagePicker from 'expo-image-picker';
+import Icon from 'react-native-vector-icons/FontAwesome';
+
+import { saveUser } from '../models/model_utils.js';
 import { StoreObj,TokenObj } from '../models/models.js';
+import { parseForm } from '../utils.js';
 import config from '../config.js';
 import crypt_lib from '../crypt_lib.js';
 
-
-function parseForm(params) {
-  var formData = new FormData();
-  for (var k in params) { formData.append(k, params[k]); }
-  return formData;
-}
 
 class Login extends React.Component {
 
   constructor(props) {
     super(props);
     this.state = {
-      is_register: false,
-      processing: false,
-			username:"adminf",
+      is_register: false,processing: false,
+      hasCameraPermission:null,
+			username:"admin",image:null,
 	    password:"abcabc",
 	    repassword:"",
 	    regdata: {
@@ -37,13 +35,35 @@ class Login extends React.Component {
     };
   }
 
+  _pickImage = async () => {
+    try {
+      let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [3, 4],
+        quality: 1,
+        base64:true,
+      });
+      if (!result.cancelled) {
+        this.setState({ image: result });
+      }
+    } catch (e) {console.log(e);}
+  };
+
   handleSignUp = () => {
-    const {username, password, repassword, regdata} = this.state;
+    const {username, password, repassword, regdata, image} = this.state;
     if (!password || !username) {
       Alert.alert("Lỗi", 'Vui lòng nhập đủ thông tin.',[{text: "OK"}],{ cancelable: false });return;
     }
     if (password!==repassword){
       Alert.alert("Lỗi", 'Mật khẩu đã nhập không khớp.',[{text: "OK"}],{ cancelable: false });return;
+    }
+    const maxs = config.max_size;
+    if(!image || image.width>maxs.width || image.height>maxs.height) {
+      Alert.alert("Lỗi", 'Kích thước ảnh không được vượt quá '+maxs.width+'x'+maxs.height+' pixel',
+        [{text: "OK"}],{ cancelable: false }
+      );
+      return;
     }
     this.setState({processing:true});
     const time = Math.floor(new Date()/1000);
@@ -58,6 +78,9 @@ class Login extends React.Component {
       time : time,
       ...regdata
     };
+    if(image && image.type && image.base64){
+      params['image_base64'] = image.base64;
+    }
 		fetch(config.getLocation('auth/register/'), {
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -74,6 +97,7 @@ class Login extends React.Component {
         Alert.alert("Lỗi", json.message+' : '+json.code,[{text: "OK"}],{ cancelable: false });
       } else {
         Alert.alert("Thông báo", "Đăng ký thành công. Vui Lòng đăng nhập.",[{text: "OK"}],{ cancelable: false });
+        this.setState({is_register:false});
       }
     })
     .catch((error) => {
@@ -88,10 +112,10 @@ class Login extends React.Component {
     const time = Math.floor(new Date()/1000);
     const hash_token = crypt_lib.hash('BFRS'+'::'+config.encryption_key+'::'+time);
     
-    const tokens = TokenObj; tokens.mapobj({ token: hash_token,refresh_token: '' });
-    const store = StoreObj;
+    const tokens = new TokenObj(); tokens.mapobj({ token: hash_token,refresh_token: '' });
+    const store = new StoreObj();
     const {realm} = this.props;
-    saveUser(realm, {tokens,store});
+    saveUser(realm, {tokens: tokens.properties,store: store.properties});
     this.setState({processing:false});
     this.props.setLogin(true);
   }
@@ -128,6 +152,7 @@ class Login extends React.Component {
       if(json.error) {
         Alert.alert("Lỗi", json.message+' : '+json.code,[{text: "OK"}],{ cancelable: false });
       } else {
+        // console.log('login.js:125',json);
         const {realm} = this.props;
         saveUser(realm, json);
         this.props.setLogin(true);
@@ -141,25 +166,26 @@ class Login extends React.Component {
   }
 
   setRegData = (o) => {
-    let regdata = this.state.regdata;
+    const {regdata} = this.state;
     for (var k in o) {regdata[k]=o[k]}
     this.setState({regdata});
   }
 
 	render() {
-    const {regdata,permission} = this.state;
+    const {regdata,permission,image} = this.state;
 		return (
     <View style={styles.container}>
       <StatusBar backgroundColor="#ff9800" />
       <Overlay isVisible={this.state.processing} borderRadius={8} height="auto">
-          <Text style={styles.center}>Loadding...</Text>
+          <Text style={styles.center}>Loading...</Text>
       </Overlay>
       <Overlay isVisible={this.state.is_register}
-        onBackdropPress={() => this.setState({ is_register: false })}
         borderRadius={8} fullScreen={true}
       >
         <ScrollView>
-          <Text style={{textAlign:'center',fontWeight:"bold",fontSize:30,color:"#fb5b5a",marginBottom:20}}>SIGN UP</Text>
+          <Text style={{textAlign:'center',fontWeight:"bold",fontSize:30,color:"#fb5b5a",marginBottom:20}}>
+            ĐĂNG KÝ
+          </Text>
           <Input
             label="Tên tài khoản" placeholder="user"
             labelStyle={styles.orange} containerStyle={styles.mb5}
@@ -180,17 +206,17 @@ class Login extends React.Component {
           <Input
             label="Tên" placeholder="Nam"
             labelStyle={styles.orange} containerStyle={styles.mb5}
-            value={this.state.regdata.first_name}
+            value={regdata.first_name}
             onChangeText={text => this.setRegData({first_name:text})}/>
           <Input
             label="Họ" placeholder="Nguyễn Văn"
             labelStyle={styles.orange} containerStyle={styles.mb5}
-            value={this.state.regdata.last_name}
+            value={regdata.last_name}
             onChangeText={text => this.setRegData({last_name:text})}/>
           <Input
             label="Email" placeholder="abc@abc.abc"
             labelStyle={styles.orange} containerStyle={styles.mb5}
-            value={this.state.regdata.email}
+            value={regdata.email}
             onChangeText={text => this.setRegData({email:text})}/>
 
           <Text style={[styles.orange,styles.label]}>Vai trò</Text>
@@ -211,25 +237,25 @@ class Login extends React.Component {
             />
           </View>              
 
-          {permission.admin===this.state.regdata.permission_id &&
+          {permission.admin===regdata.permission_id &&
           <View style={[styles.inputView,styles.mb5]} >
             <TextInput  
               style={styles.inputText}
               placeholder="Token..." 
               placeholderTextColor="#ffffff"
-              value={this.state.regdata.permission_token}
+              value={regdata.permission_token}
               onChangeText={text => this.setRegData({permission_token:text}) }/>
           </View>
           }
 
-          {permission.user===this.state.regdata.permission_id &&
+          {permission.user===regdata.permission_id &&
           <View>
             <View style={[styles.inputView,styles.mb5]} >
               <TextInput  
                 style={styles.inputText}
                 placeholder="Tên cửa hàng..." 
                 placeholderTextColor="#ffffff"
-                value={this.state.regdata.storename}
+                value={regdata.storename}
                 onChangeText={text => this.setRegData({storename:text}) }/>
             </View>
             <View style={[styles.inputView,styles.mb5]} >
@@ -237,19 +263,41 @@ class Login extends React.Component {
                 style={styles.inputText}
                 placeholder="Mô tả..." 
                 placeholderTextColor="#ffffff"
-                value={this.state.regdata.description}
+                value={regdata.description}
                 onChangeText={text => this.setRegData({description:text}) }/>
             </View>
+            <View style={{
+              backgroundColor:"#ffa184",borderRadius:25,height:50,justifyContent:"center",paddingHorizontal:10
+            }} >
+              <Input
+                placeholder="Ảnh..." disabled
+                inputContainerStyle={{borderBottomWidth:0,margin:0}}
+                labelStyle={styles.orange} containerStyle={{margin:0}}
+                value={(image &&image.type)?image.uri.split('/').pop():''}
+                leftIcon={
+                  <Icon name='image' size={30} color='#ffffff'
+                    onPress={this._pickImage}
+                  />
+                }
+                rightIcon={
+                  <Icon name='remove' size={30} color='#ffffff'
+                    onPress={()=>this.setState({image:null})}
+                  />
+                }
+                onChangeText={text => this.setProduct({product_name:text})}/>
+              </View>
           </View>
           }
 
           <View style={styles.center}>
-            <TouchableOpacity onPress={this.handleSignUp} style={[styles.loginBtn,styles.mt40,styles.success,styles.w80p]}>
-              <Text style={styles.white}>SIGN UP</Text>
+            <TouchableOpacity onPress={this.handleSignUp}
+              style={[styles.loginBtn,styles.mt40,styles.success,styles.w80p]}
+            >
+              <Text style={styles.white}>ĐĂNG KÝ</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => this.setState({ is_register: false })}
               style={[styles.loginBtn,styles.bgred,styles.w80p]}>
-              <Text style={styles.white}>CLOSE</Text>
+              <Text style={styles.white}>ĐÓNG</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -312,15 +360,15 @@ const styles = StyleSheet.create({
     justifyContent:"center",
     padding:20
   },
+  inputText:{
+    height:50,
+    color:"white"
+  },
   mb20:{marginBottom:20,},
   mb5:{marginBottom:5,},
   mt40:{marginTop:40,},
   label:{paddingLeft:10,fontSize: 16,fontWeight: 'bold'},
   w80p:{width:"80%",},
-  inputText:{
-    height:50,
-    color:"white"
-  },
   loginBtn:{
     borderRadius:25,
     height:50,

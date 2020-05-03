@@ -1,3 +1,18 @@
+function parseDate(date, locale=true){
+  let ldate='';
+  if(locale) {
+    if (date && new Date(date)!='Invalid Date'){
+      ldate = new Date(date).toISOString().slice(0, 10).split('-');
+      ldate = ldate[2]+'/'+ldate[1]+'/'+ldate[0];
+    }
+  } else {
+    ldate = date.split('/');
+    ldate = (ldate[2]+'-'+ldate[1]+'-'+ldate[0]);
+  }
+  return ldate;
+}
+
+
 function parseForm(params) {
   var formData = new FormData();
   for (var k in params) { formData.append(k, params[k]); }
@@ -41,15 +56,19 @@ function vi2en_r(viTxt) {
 // crd2m({lat:21.213885,lng:105.854878},{lat:21.213873,lng:105.854236}) = 66m
 const crd2m=function(f,t){
 	// lat1, lng1, lat2, lng2
-	if (typeof f === 'string') {
-		const af=f.split(';');
-		if(af.length!=2){return 0;}
-		f={lat:parseFloat(af[0]),lng:parseFloat(af[1])};
-	}
-	if (typeof t === 'string') {
-		const at=t.split(';');
-		if(at.length!=2){return 0;}
-		t={lat:parseFloat(at[0]),lng:parseFloat(at[1])};
+	try {
+		if (typeof f === 'string') {
+			const af=f.split(';');
+			if(af.length!=2){return 0;}
+			f={lat:parseFloat(af[0]),lng:parseFloat(af[1])};
+		}
+		if (typeof t === 'string') {
+			const at=t.split(';');
+			if(at.length!=2){return 0;}
+			t={lat:parseFloat(at[0]),lng:parseFloat(at[1])};
+		}
+	} catch (e) {
+		return 0;
 	}
 	const lat1=f.lat;
 	const lng1=f.lng;
@@ -71,5 +90,5 @@ const crd2m=function(f,t){
 
 
 export {
-	parseForm, crd2m
+	parseForm, parseDate, crd2m
 };

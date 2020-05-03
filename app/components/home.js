@@ -8,8 +8,9 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import {TokenSchema,UserSchema,StoreSchema,ROLE} from '../models/models.js';
 import {getUser} from '../models/model_utils.js';
 import SearchTab from './tabs/search.js';
-import Feed from './tabs/feed.js';
-import Detail from './tabs/detail.js';
+import StoreTab from './tabs/store.js';
+import DetailTab from './tabs/detail.js';
+import AdminTab from './tabs/admin.js';
 
 const Tab = createBottomTabNavigator();
 
@@ -74,14 +75,18 @@ class Home extends React.Component {
 	      }}
 	    >
         {this.state.role==ROLE['admin'] &&
-	      <Tab.Screen name={tabs.admin.name} component={Feed}/>
+	      <Tab.Screen name={tabs.admin.name}>
+          {props => <AdminTab {...props} realm={realm} />}
+        </Tab.Screen>
         }
-	      <Tab.Screen name={tabs.store.name} component={Feed}/>
+        <Tab.Screen name={tabs.store.name}>
+          {props => <StoreTab {...props} realm={realm} />}
+        </Tab.Screen>
 	      <Tab.Screen name={tabs.search.name}>
-	      {props => <SearchTab {...props} realm={realm} />}
+	       {props => <SearchTab {...props} realm={realm} />}
 	      </Tab.Screen>
 	      <Tab.Screen name={tabs.detail.name}>
-	      {props => <Detail {...props} realm={realm} logout={this.logout}/>}
+	        {props => <DetailTab {...props} realm={realm} logout={this.logout}/>}
 	      </Tab.Screen>
 	    </Tab.Navigator>
     </NavigationContainer>

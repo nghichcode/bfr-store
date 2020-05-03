@@ -78,7 +78,7 @@ class App extends React.Component {
     if (loading) {
       return(
         <View style={{flex: 1, flexDirection: 'column',justifyContent: 'center',}}>
-            <Text style={{fontWeight:"bold",fontSize:40,color:"#fb5b5a",textAlign:'center'}}>Loadding...</Text>
+            <Text style={{fontWeight:"bold",fontSize:40,color:"#fb5b5a",textAlign:'center'}}>Loading...</Text>
         </View>
       );
     }

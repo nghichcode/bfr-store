@@ -1,8 +1,12 @@
 var CryptoJS = require("crypto-js");
 
-function CryptoJSAesEncrypt(passphrase, plain_text){
+function CryptoJSAesEncrypt(passphrase, plain_text, crypt_data=null){
     var salt = CryptoJS.lib.WordArray.random(256);
     var iv = CryptoJS.lib.WordArray.random(16);
+    if (crypt_data) {
+        salt = crypt_data.salt;
+        iv = crypt_data.iv;
+    }
     var key = CryptoJS.PBKDF2(passphrase, salt, { hasher: CryptoJS.algo.SHA512, keySize: 64/8, iterations: 999 });
 
     var encrypted = CryptoJS.AES.encrypt(plain_text, key, {iv: iv});
@@ -10,7 +14,11 @@ function CryptoJSAesEncrypt(passphrase, plain_text){
     var data = {
         ciphertext : CryptoJS.enc.Base64.stringify(encrypted.ciphertext),
         salt : CryptoJS.enc.Hex.stringify(salt),
-        iv : CryptoJS.enc.Hex.stringify(iv)    
+        iv : CryptoJS.enc.Hex.stringify(iv),
+        crypt_data: {
+            salt : salt,
+            iv : iv,
+        }
     }
     return data;
 }

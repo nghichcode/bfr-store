@@ -9,6 +9,14 @@ const ROLE_NAME = {
   3:'guest',
 };
 
+const mapobj = function (obj){
+  for(i in obj){
+    if(i in this.properties && i!='id' && obj[i]!=null){
+      this.properties[i]=(isNaN(obj[i])||(obj[i]==''))?obj[i]:parseInt(obj[i]);
+    }
+  }
+};
+
 const TokenSchema = {
   name: 'Token',
   primaryKey: 'id',
@@ -18,20 +26,14 @@ const TokenSchema = {
     refresh_token: 'string',
   }
 };
-const TokenObj = {
-  name: 'Token',
-  properties: {
+const TokenObj = function(){
+  this.name = 'Token';
+  this.properties = {
     id: 1,
     token: '',
     refresh_token: '',
-  },
-  mapobj: function (obj){
-    for(i in obj){
-      if(i in this.properties && i!='id' && obj[i]){
-        this.properties[i]=isNaN(obj[i])?obj[i]:parseInt(obj[i]);
-      }
-    }
-  }
+  };
+  this.mapobj = mapobj.bind(this);
 };
 
 const UserSchema = {
@@ -46,30 +48,24 @@ const UserSchema = {
     permission_id: 'int'
   }
 };
-const UserObj = {
-  name: 'User',
-  properties: {
+const UserObj = function(){
+  this.name = 'User';
+  this.properties = {
     id: 1,
     username:  '',
     first_name: '',
     last_name: '',
     email: '',
     permission_id:3
-  },
-  mapobj: function (obj){
-    for(i in obj){
-      if(i in this.properties && i!='id' && obj[i]){
-        this.properties[i]=isNaN(obj[i])?obj[i]:parseInt(obj[i]);
-      }
-    }
-  }
+  };
+  this.mapobj = mapobj.bind(this);
 };
 const UserLabel = {
   name: 'User',
   properties: {
     username:  'Tên tài khoản:',
-    first_name: 'Họ:',
-    last_name: 'Tên:',
+    first_name: 'Tên:',
+    last_name: 'Họ:',
     email: 'Email:',
     permission_id: 'Quyền:'
   }
@@ -83,25 +79,21 @@ const StoreSchema = {
     storename: 'string',
     location:  'string',
     hide_detail: 'int',
+    img_url: 'string',
     description: 'string',
   }
 };
-const StoreObj = {
-  name: 'Store',
-  properties: {
+const StoreObj = function(){
+  this.name = 'Store';
+  this.properties = {
     id: 1,
     storename: '',
     location:  '',
     hide_detail: 1,
+    img_url: '',
     description: '',
-  },
-  mapobj: function (obj){
-    for(i in obj){
-      if(i in this.properties && i!='id' && obj[i]){
-        this.properties[i]=isNaN(obj[i])?obj[i]:parseInt(obj[i]);
-      }
-    }
-  }
+  };
+  this.mapobj = mapobj.bind(this);
 };
 const StoreLabel = {
   name: 'Store',
@@ -109,6 +101,7 @@ const StoreLabel = {
     storename: 'Tên cửa hàng:',
     location:  'Vị trí:',
     hide_detail: 'Ẩn thông tin:',
+    img_url: 'Ảnh',
     description: 'Mô tả:',
   }
 };
