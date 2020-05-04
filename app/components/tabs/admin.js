@@ -1,9 +1,9 @@
 import React from 'react';
-import {ScrollView,Alert,View,Button,FlatList,TouchableOpacity} from 'react-native';
+import {ScrollView,Alert,View,FlatList,TouchableOpacity} from 'react-native';
 import {Text,ListItem,Overlay,Input,Tooltip} from 'react-native-elements';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
-import {styles} from './search.js';
+import {styles} from '../styles/round_theme.js';
 import config from '../../config.js';
 import {parseForm} from '../../utils.js';
 import SearchBarATC from './search_bar_atc.js';
@@ -228,16 +228,16 @@ class AdminTab extends React.Component {
 
           <View style={styles.center}>
             <TouchableOpacity onPress={()=>this.approveProduct(true)} style={[
-              styles.loginBtn,styles.mt40,styles.success,styles.w80p
+              styles.roundBtn,styles.mt40,styles.bgsuccess,styles.w80p
               ]}>
               <Text style={styles.white}>Duyệt</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={()=>this.approveProduct(false)}
-              style={[styles.loginBtn,styles.bgred,styles.w80p]}>
+              style={[styles.roundBtn,styles.bgred,styles.w80p]}>
               <Text style={styles.white}>Xóa</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => this.setState({ approve_item: {} })}
-              style={[styles.loginBtn,styles.bginfo,styles.w80p]}>
+              style={[styles.roundBtn,styles.bginfo,styles.w80p]}>
               <Text style={styles.white}>ĐÓNG</Text>
             </TouchableOpacity>
           </View>
@@ -270,16 +270,15 @@ class AdminTab extends React.Component {
       }
       {(permission_token?true:false) &&
       <Overlay isVisible={permission_token?true:false} height="auto">
-        <View>
+        <View style={styles.center}>
           <Input
             label={'Token cấp phép tạo tài khoản'}
             labelStyle={{color:'#ffa184'}} containerStyle={{marginVertical:5}}
             value={permission_token}/>
-          <Button
-            title='Đóng'
-            onPress={()=>this.setState({permission_token:''})}
-            containerStyle={{marginHorizontal: '10%',}}
-          />
+          <TouchableOpacity onPress={()=>this.setState({permission_token:''})}
+            style={[styles.roundBtn,styles.bginfo,styles.w80p]}>
+            <Text style={styles.white}>ĐÓNG</Text>
+          </TouchableOpacity>
         </View>
       </Overlay>
       }

@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, TextInput, TouchableOpacity, ScrollView,StatusBar,Alert } from 'react-native';
+import { View, TextInput, TouchableOpacity, ScrollView,StatusBar,Alert } from 'react-native';
 import {Text,Overlay,CheckBox,Input} from 'react-native-elements';
 
 import * as ImagePicker from 'expo-image-picker';
@@ -10,6 +10,7 @@ import { StoreObj,TokenObj } from '../models/models.js';
 import { parseForm } from '../utils.js';
 import config from '../config.js';
 import crypt_lib from '../crypt_lib.js';
+import {styles} from './styles/round_theme.js';
 
 
 class Login extends React.Component {
@@ -59,7 +60,7 @@ class Login extends React.Component {
       Alert.alert("Lỗi", 'Mật khẩu đã nhập không khớp.',[{text: "OK"}],{ cancelable: false });return;
     }
     const maxs = config.max_size;
-    if(!image || image.width>maxs.width || image.height>maxs.height) {
+    if(image && (image.width>maxs.width || image.height>maxs.height)) {
       Alert.alert("Lỗi", 'Kích thước ảnh không được vượt quá '+maxs.width+'x'+maxs.height+' pixel',
         [{text: "OK"}],{ cancelable: false }
       );
@@ -238,9 +239,9 @@ class Login extends React.Component {
           </View>              
 
           {permission.admin===regdata.permission_id &&
-          <View style={[styles.inputView,styles.mb5]} >
+          <View style={[styles.roundInput,styles.mb5]} >
             <TextInput  
-              style={styles.inputText}
+              style={styles.input50}
               placeholder="Token..." 
               placeholderTextColor="#ffffff"
               value={regdata.permission_token}
@@ -250,17 +251,17 @@ class Login extends React.Component {
 
           {permission.user===regdata.permission_id &&
           <View>
-            <View style={[styles.inputView,styles.mb5]} >
+            <View style={[styles.roundInput,styles.mb5]} >
               <TextInput  
-                style={styles.inputText}
+                style={styles.input50}
                 placeholder="Tên cửa hàng..." 
                 placeholderTextColor="#ffffff"
                 value={regdata.storename}
                 onChangeText={text => this.setRegData({storename:text}) }/>
             </View>
-            <View style={[styles.inputView,styles.mb5]} >
+            <View style={[styles.roundInput,styles.mb5]} >
               <TextInput  
-                style={styles.inputText}
+                style={styles.input50}
                 placeholder="Mô tả..." 
                 placeholderTextColor="#ffffff"
                 value={regdata.description}
@@ -291,30 +292,30 @@ class Login extends React.Component {
 
           <View style={styles.center}>
             <TouchableOpacity onPress={this.handleSignUp}
-              style={[styles.loginBtn,styles.mt40,styles.success,styles.w80p]}
+              style={[styles.roundBtn,styles.bgsuccess,styles.mt40,styles.w80p]}
             >
               <Text style={styles.white}>ĐĂNG KÝ</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => this.setState({ is_register: false })}
-              style={[styles.loginBtn,styles.bgred,styles.w80p]}>
+              style={[styles.roundBtn,styles.bgred,styles.w80p]}>
               <Text style={styles.white}>ĐÓNG</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
       </Overlay>
       <Text style={styles.logo}>BFR Store</Text>
-      <View style={[styles.inputView, styles.w80p, styles.mb20]} >
+      <View style={[styles.roundInput, styles.w80p, styles.mb20]} >
         <TextInput  
-          style={styles.inputText}
+          style={styles.input50}
           placeholder="Tài khoản" 
           placeholderTextColor="#ffffff"
           value={this.state.username}
           onChangeText={text => this.setState({username:text})}/>
       </View>
-      <View style={[styles.inputView, styles.w80p, styles.mb20]}>
+      <View style={[styles.roundInput, styles.w80p, styles.mb20]}>
         <TextInput  
           secureTextEntry
-          style={styles.inputText}
+          style={styles.input50}
           placeholder="Mật khẩu"
           placeholderTextColor="#ffffff"
           value={this.state.password}
@@ -323,12 +324,12 @@ class Login extends React.Component {
       <TouchableOpacity>
         <Text style={{color:"#8c27b0",fontSize:12}}>Quên mật khẩu?</Text>
       </TouchableOpacity>
-      <TouchableOpacity onPress={this.handleLogin} style={[styles.loginBtn,styles.mt40,styles.bgred,styles.w80p]}>
+      <TouchableOpacity onPress={this.handleLogin} style={[styles.roundBtn,styles.mt40,styles.bgred,styles.w80p]}>
         <Text style={{ color:"#ffffff" }}>ĐĂNG NHẬP</Text>
       </TouchableOpacity>
       <TouchableOpacity
         onPress={text => this.setState({is_register:true,password:'',repassword:''})}
-        style={[styles.loginBtn,styles.bgwarning,styles.w80p]}
+        style={[styles.roundBtn,styles.bgwarning,styles.w80p]}
       >
         <Text style={{ color:"#ffffff" }}>ĐĂNG KÝ</Text>
       </TouchableOpacity>
@@ -339,49 +340,5 @@ class Login extends React.Component {
 		);
 	}
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff2d6',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  logo:{
-    fontWeight:"bold",
-    fontSize:50,
-    color:"#fb5b5a",
-    marginBottom:40
-  },
-  inputView:{
-    backgroundColor:"#ffa184",
-    borderRadius:25,
-    height:50,
-    justifyContent:"center",
-    padding:20
-  },
-  inputText:{
-    height:50,
-    color:"white"
-  },
-  mb20:{marginBottom:20,},
-  mb5:{marginBottom:5,},
-  mt40:{marginTop:40,},
-  label:{paddingLeft:10,fontSize: 16,fontWeight: 'bold'},
-  w80p:{width:"80%",},
-  loginBtn:{
-    borderRadius:25,
-    height:50,
-    alignItems:"center",
-    justifyContent:"center",
-    marginBottom:10
-  },
-  orange:{color:'#ffa184'},
-  success:{backgroundColor:"#8bc34a"},
-  bgred: {backgroundColor:"#fb5b5a",},
-  bgwarning: {backgroundColor:"#ff9800",},
-  white: {color:"#ffffff"},
-  center:{alignItems:'center',textAlign:'center'},
-});
 
 export default Login;

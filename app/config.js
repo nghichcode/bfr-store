@@ -1,14 +1,14 @@
 const config = {
 	// host:'http://192.168.0.101/',
-	host:'http://192.168.1.7/',
-	path:'ignite-api/api/',
+	host:'http://nghichcode.com/',
+	path:'api/',
 	getLocation:function(name) {
 		return this.host+this.path+name;
 	},
 	getImage:function(name) {
 		if(!name) {return null;}
 		name = name.split('.').join('/');
-		const dir = 'getimage/';
+		const dir = 'get_image/';
 		return this.host+this.path+dir+name;
 	},
 	max_size:{width:768,height:1024},

@@ -1,7 +1,7 @@
 import Geolocation from '@react-native-community/geolocation';
 
 import React from 'react';
-import {TouchableOpacity,TextInput,StyleSheet,View,Text,ScrollView,Alert} from 'react-native';
+import {TouchableOpacity,TextInput,View,Text,ScrollView,Alert} from 'react-native';
 import {Overlay,ListItem,Input,CheckBox,Image} from 'react-native-elements';
 import * as ImagePicker from 'expo-image-picker';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -11,6 +11,7 @@ import crypt_lib from '../../crypt_lib.js';
 import { getUser,getToken,saveUser,saveToken } from '../../models/model_utils.js';
 import { parseForm } from '../../utils.js';
 import { UserObj,StoreObj,UserLabel,StoreLabel,ROLE_NAME } from '../../models/models.js';
+import {styles} from '../styles/round_theme.js';
 
 /* Example location returned
 {
@@ -131,7 +132,7 @@ class DetailTab extends React.Component {
     const {realm} = this.props;
     const {user_data,tokens,image} = this.state;
     const maxs = config.max_size;
-    if(!image || image.width>maxs.width || image.height>maxs.height) {
+    if(image && (image.width>maxs.width || image.height>maxs.height)) {
       Alert.alert("Lỗi", 'Kích thước ảnh không được vượt quá '+maxs.width+'x'+maxs.height+' pixel',
         [{text: "OK"}],{ cancelable: false }
       );
@@ -162,7 +163,7 @@ class DetailTab extends React.Component {
       params['image_base64'] = image.base64;
     }
 
-    fetch(config.getLocation('userdetail/update_user/'), {
+    fetch(config.getLocation('user_detail/update_user/'), {
       headers: { 'authorization': tokens.token, },
       method: 'POST',body: parseForm(params),
     })
@@ -292,25 +293,25 @@ class DetailTab extends React.Component {
             <Text style={{textAlign:'center',fontWeight:"bold",fontSize:20,color:"#fb5b5a",marginBottom:20}}>
               ĐỔI MẬT KHẨU
             </Text>
-            <View style={[styles.inputView,styles.mb5]} >
+            <View style={[styles.roundInput,styles.mb5]} >
               <TextInput secureTextEntry
-                style={styles.inputText}
+                style={styles.input50}
                 placeholder="Mật khẩu cũ" 
                 placeholderTextColor="#ffffff"
                 value={this.state.old_password}
                 onChangeText={text => this.setState({old_password:text}) }/>
             </View>
-            <View style={[styles.inputView,styles.mb5]} >
+            <View style={[styles.roundInput,styles.mb5]} >
               <TextInput secureTextEntry
-                style={styles.inputText}
+                style={styles.input50}
                 placeholder="Mật khẩu mới" 
                 placeholderTextColor="#ffffff"
                 value={this.state.password}
                 onChangeText={text => this.setState({password:text}) }/>
             </View>
-            <View style={[styles.inputView,styles.mb5]} >
+            <View style={[styles.roundInput,styles.mb5]} >
               <TextInput secureTextEntry
-                style={styles.inputText}
+                style={styles.input50}
                 placeholder="Nhập lại mật khẩu mới" 
                 placeholderTextColor="#ffffff"
                 value={this.state.password1}
@@ -318,11 +319,11 @@ class DetailTab extends React.Component {
             </View>
             <View style={{textAlign:'center',alignItems:'center',marginTop:20}}>
               <TouchableOpacity onPress={()=>this.changePassword()}
-                style={[styles.loginBtn,styles.success,styles.w100p]}>
+                style={[styles.roundBtn,styles.bgsuccess,styles.w100p]}>
                 <Text style={styles.white}>Đổi</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={()=>this.setState({change_pass:!change_pass})}
-                style={[styles.loginBtn,styles.bgred,styles.w100p]}>
+                style={[styles.roundBtn,styles.bgred,styles.w100p]}>
                 <Text style={styles.white}>Đóng</Text>
               </TouchableOpacity>
             </View>
@@ -409,24 +410,24 @@ class DetailTab extends React.Component {
           <View style={{marginTop:40, marginHorizontal:'2%'}}>
             {is_edit &&
             <TouchableOpacity onPress={this.updateProfile}
-              style={[styles.loginBtn,styles.info,styles.w100p]}>
+              style={[styles.roundBtn,styles.bginfo,styles.w100p]}>
               <Text style={styles.white}>Cập nhật</Text>
             </TouchableOpacity>
             }
             {((tokens && tokens.refresh_token && user_data && user_data.user)?true:false) &&
             <View>
               <TouchableOpacity onPress={()=>this.setState({is_edit:!is_edit})}
-                style={[styles.loginBtn,styles.info,styles.w100p]}>
+                style={[styles.roundBtn,styles.bginfo,styles.w100p]}>
                 <Text style={styles.white}>{is_edit?'Đóng':'Sửa thông tin'}</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={()=>this.setState({change_pass:!change_pass})}
-                style={[styles.loginBtn,styles.info,styles.w100p]}>
+                style={[styles.roundBtn,styles.bginfo,styles.w100p]}>
                 <Text style={styles.white}>Đổi mật khẩu</Text>
               </TouchableOpacity>
             </View>
             }
             <TouchableOpacity onPress={this.props.logout}
-              style={[styles.loginBtn,styles.info,styles.w100p]}>
+              style={[styles.roundBtn,styles.bginfo,styles.w100p]}>
               <Text style={styles.white}>Đăng Xuất</Text>
             </TouchableOpacity>
           </View>
@@ -435,33 +436,5 @@ class DetailTab extends React.Component {
     );
   }
 }
-
-const styles = StyleSheet.create({
-  inputView:{
-    backgroundColor:"#ffa184",
-    borderRadius:25,
-    height:50,
-    justifyContent:"center",
-    padding:20
-  },
-  mb5:{marginBottom:5},
-  inputText:{
-    height:50,
-    color:"white"
-  },
-  white:{ color:"white" },
-  loginBtn:{
-    borderRadius:25,
-    height:50,
-    alignItems:"center",
-    justifyContent:"center",
-    marginBottom:5,
-  },
-  w100p:{width:"100%",},
-  orange:{color:'#ffa184'},
-  info:{backgroundColor:'#3f51b5'},
-  success:{backgroundColor:"#8bc34a"},
-  bgred: {backgroundColor:"#fb5b5a",},
-});
 
 export default DetailTab;

@@ -4,7 +4,7 @@ import {Card,Text,ListItem,Overlay,Input} from 'react-native-elements';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
-import {styles} from './search.js';
+import {styles} from '../styles/round_theme.js';
 import config from '../../config.js';
 import {parseForm,parseDate,crd2m} from '../../utils.js';
 import SearchBarATC from './search_bar_atc.js';
@@ -155,7 +155,7 @@ class StoreTab extends React.Component {
               <View style={styles.cards_list}>
                 <View style={styles.card_row}>
                   <View style={styles.card}>
-                    <View style={{flexDirection: 'row',justifyContent:'center',alignItems: 'center'}}>
+                    <View style={styles.rowcenter}>
                       <Icon name='map-marker' size={20} color='#ffffff'/>
                       <Text style={{color:'#ffffff',marginLeft:8}}>{store.location}</Text>
                     </View>
@@ -166,7 +166,7 @@ class StoreTab extends React.Component {
                 <View style={{flex:1,flexDirection:'row',}}>
                   <View style={styles.card_row}>
                     <View style={styles.card}>
-                      <View style={{flexDirection: 'row',justifyContent:'center',alignItems: 'center'}}>
+                      <View style={styles.rowcenter}>
                         <Icon name='road' size={20} color='#ffffff'/>
                         <Text style={{color:'#ffffff',marginLeft:8}}>{
                           !user_location
@@ -182,7 +182,7 @@ class StoreTab extends React.Component {
                   {(user && user.email?true:null) &&
                   <View style={styles.card_row}>
                     <View style={styles.card}>
-                      <View style={{flexDirection: 'row',justifyContent:'center',alignItems: 'center'}}>
+                      <View style={styles.rowcenter}>
                         <Icon name='envelope' size={20} color='#ffffff'/>
                         <Text style={{color:'#ffffff',marginLeft:8}}>{user.email}</Text>
                       </View>
@@ -195,15 +195,15 @@ class StoreTab extends React.Component {
                 {(store_owner?true:null) &&
                 <View style={styles.card_row}>
                   <View style={styles.card}>
-                    <Text style={[styles.textWhite,styles.textBold]}>Chủ cửa hàng:</Text>
-                    <Text style={styles.textWhite}>{store_owner}</Text>
+                    <Text style={[styles.white,styles.textBold]}>Chủ cửa hàng:</Text>
+                    <Text style={styles.white}>{store_owner}</Text>
                   </View>
                 </View>
                 }
                 <View style={styles.card_row}>
                   <View style={styles.card}>
-                    <Text style={[styles.textWhite,styles.textBold]}>Mô tả:</Text>
-                    <Text style={styles.textWhite}>{store.description}</Text>
+                    <Text style={[styles.white,styles.textBold]}>Mô tả:</Text>
+                    <Text style={styles.white}>{store.description}</Text>
                   </View>
                 </View>
 
@@ -284,16 +284,16 @@ class StoreTab extends React.Component {
 
           <View style={styles.center}>
             <TouchableOpacity onPress={()=>this.updateItem(true)} style={[
-              styles.loginBtn,styles.mt40,styles.success,styles.w80p
+              styles.roundBtn,styles.mt40,styles.bgsuccess,styles.w80p
               ]}>
               <Text style={styles.white}>Sửa</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={()=>this.updateItem(false)}
-              style={[styles.loginBtn,styles.bgred,styles.w80p]}>
+              style={[styles.roundBtn,styles.bgred,styles.w80p]}>
               <Text style={styles.white}>Xóa</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => this.setState({ edit_item: {} })}
-              style={[styles.loginBtn,styles.bginfo,styles.w80p]}>
+              style={[styles.roundBtn,styles.bginfo,styles.w80p]}>
               <Text style={styles.white}>ĐÓNG</Text>
             </TouchableOpacity>
           </View>

@@ -6,8 +6,10 @@ function parseDate(date, locale=true){
       ldate = ldate[2]+'/'+ldate[1]+'/'+ldate[0];
     }
   } else {
-    ldate = date.split('/');
-    ldate = (ldate[2]+'-'+ldate[1]+'-'+ldate[0]);
+  	if(date){
+	    ldate = date.split('/');
+	    ldate = (ldate[2]+'-'+ldate[1]+'-'+ldate[0]);
+  	}
   }
   return ldate;
 }

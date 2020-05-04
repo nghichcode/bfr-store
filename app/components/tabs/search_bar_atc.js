@@ -96,18 +96,18 @@ class SearchBarATC extends React.Component {
               style={{marginBottom:10, display:'flex',flex:1,flexDirection:'column-reverse',alignItems:'center'}}
               >
                 <View style={{flex:0,flexDirection:'row', marginBottom:4}}>
-                  <Button
-                    title='Đóng'
-                    onPress={()=>{this.barcodeRecognized(false);}}
-                    containerStyle={{flex:3,marginHorizontal: '5%',}}
-                    buttonStyle={{height:40,}}
-                  />
-                  <Button
-                    title='' icon={<Ionicons name='ios-flash' size={20} color='#fff'/>}
-                    onPress={()=>{this.setState({flash:!flash});}}
-                    containerStyle={{flex:0,marginHorizontal: '5%',}}
-                    buttonStyle={{height:40,padding:0, margin:0,width:40}}
-                  />
+                  <TouchableOpacity onPress={()=>{this.barcodeRecognized(false);}}
+                  style={{flex:3,backgroundColor:"#4caf50",marginHorizontal: '5%',
+                    borderRadius:25,height:50,alignItems:"center",justifyContent:'center',marginBottom:10
+                  }}>
+                    <Text style={{color:"#ffffff"}}>Đóng</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={()=>{this.setState({flash:!flash});}}
+                  style={{flex:0,backgroundColor:"#4caf50",marginHorizontal: '5%',width:40,
+                    borderRadius:25,height:50,alignItems:"center",justifyContent:'center',marginBottom:10
+                  }}>
+                    <Text style={{color:"#ffffff"}}><Ionicons name='ios-flash' size={20} color='#fff'/></Text>
+                  </TouchableOpacity>
                 </View>
               </View>
           </Camera>
