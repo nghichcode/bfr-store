@@ -6,7 +6,7 @@ import * as ImagePicker from 'expo-image-picker';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 import { saveUser } from '../models/model_utils.js';
-import { StoreObj,TokenObj } from '../models/models.js';
+import { StoreObj,TokenObj,ROLE } from '../models/models.js';
 import { parseForm } from '../utils.js';
 import config from '../config.js';
 import crypt_lib from '../crypt_lib.js';
@@ -20,9 +20,8 @@ class Login extends React.Component {
     this.state = {
       is_register: false,processing: false,
       hasCameraPermission:null,
-			username:"admin",image:null,
-	    password:"abcabc",
-	    repassword:"",
+			username:config.username,image:null,
+	    password:config.password,repassword:"",remember:false,
 	    regdata: {
 	    	first_name:"",
 	    	last_name:"",
@@ -32,7 +31,6 @@ class Login extends React.Component {
         storename:"",
         description:"",
 	    },
-	    permission: {'admin':1,'user':2,}
     };
   }
 
@@ -122,10 +120,13 @@ class Login extends React.Component {
   }
 
   handleLogin = () => {
-    const {username, password} = this.state;
+    const {username, password, remember} = this.state;
     if (!password || !username) {
       Alert.alert("Lỗi", 'Vui lòng nhập đủ thông tin.',[{text: "OK"}],{ cancelable: false });return;
     }
+    if (remember) {config.username=username;config.password=password;}
+    else {config.username='';config.password='';}
+
     this.setState({processing:true});
     const time = Math.floor(new Date()/1000);
     const hpassword = crypt_lib.hash(password);
@@ -173,7 +174,7 @@ class Login extends React.Component {
   }
 
 	render() {
-    const {regdata,permission,image} = this.state;
+    const {regdata,image,remember} = this.state;
 		return (
     <View style={styles.container}>
       <StatusBar backgroundColor="#ff9800" />
@@ -224,21 +225,21 @@ class Login extends React.Component {
           <View style={{flex: 1, flexDirection: 'row', marginBottom:8}}>
             <CheckBox
               title='Cửa hàng'
-              checked={permission.user===regdata.permission_id}
-              onPress={ ()=>this.setRegData({permission_id:permission.user}) }
+              checked={ROLE.user===regdata.permission_id}
+              onPress={ ()=>this.setRegData({permission_id:ROLE.user}) }
               checkedIcon='dot-circle-o' uncheckedIcon='circle-o'
               containerStyle={{flex:1, margin:0, backgroundColor: "transparent", borderWidth: 0}}
             />
             <CheckBox
               title='Admin'
-              checked={permission.admin===regdata.permission_id}
-              onPress={ ()=>this.setRegData({permission_id:permission.admin}) }
+              checked={ROLE.admin===regdata.permission_id}
+              onPress={ ()=>this.setRegData({permission_id:ROLE.admin}) }
               checkedIcon='dot-circle-o' uncheckedIcon='circle-o'
               containerStyle={{flex:1, margin:0, backgroundColor: "transparent", borderWidth: 0}}
             />
           </View>              
 
-          {permission.admin===regdata.permission_id &&
+          {ROLE.admin===regdata.permission_id &&
           <View style={[styles.roundInput,styles.mb5]} >
             <TextInput  
               style={styles.input50}
@@ -249,7 +250,7 @@ class Login extends React.Component {
           </View>
           }
 
-          {permission.user===regdata.permission_id &&
+          {ROLE.user===regdata.permission_id &&
           <View>
             <View style={[styles.roundInput,styles.mb5]} >
               <TextInput  
@@ -312,7 +313,7 @@ class Login extends React.Component {
           value={this.state.username}
           onChangeText={text => this.setState({username:text})}/>
       </View>
-      <View style={[styles.roundInput, styles.w80p, styles.mb20]}>
+      <View style={[styles.roundInput, styles.w80p, styles.mb5]}>
         <TextInput  
           secureTextEntry
           style={styles.input50}
@@ -322,7 +323,13 @@ class Login extends React.Component {
           onChangeText={text => this.setState({password:text})}/>
       </View>
       <TouchableOpacity>
-        <Text style={{color:"#8c27b0",fontSize:12}}>Quên mật khẩu?</Text>
+        <CheckBox
+          title='Nhớ mật khẩu?'
+          checked={remember}
+          onPress={ ()=>this.setState({remember:!remember}) }
+          textStyle={{color:"#8c27b0",fontSize:12}}
+          containerStyle={{margin:0, backgroundColor: "transparent", borderWidth: 0}}
+        />
       </TouchableOpacity>
       <TouchableOpacity onPress={this.handleLogin} style={[styles.roundBtn,styles.mt40,styles.bgred,styles.w80p]}>
         <Text style={{ color:"#ffffff" }}>ĐĂNG NHẬP</Text>

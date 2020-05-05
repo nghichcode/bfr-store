@@ -258,7 +258,7 @@ class StoreTab extends React.Component {
         }
       </SearchBarATC>
 
-      <Overlay isVisible={(edit_item && edit_item.id)?true:false} fullScreen={true}>
+      <Overlay isVisible={(edit_item && edit_item.store_product_id)?true:false} fullScreen={true}>
         <ScrollView>
           <Text style={{textAlign:'center',fontWeight:"bold",fontSize:20,color:"#fb5b5a",marginBottom:20}}>
             Sửa sản phẩm

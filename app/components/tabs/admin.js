@@ -12,23 +12,18 @@ import {ROLE} from '../../models/models.js';
 
 class RoundButton extends React.Component {
   render() {
-    const {onPress, icon, bottom}=this.props;
+    const {onPress, icon}=this.props;
     return (
-    <View style={{
-      position:'absolute',right:16,bottom:bottom,alignItems:'center',justifyContent:'center',zIndex:9
-    }}
-    >
       <TouchableOpacity activeOpacity={0.68} onPress={onPress}
       style={{
         alignItems:'center',justifyContent:'center',
         width:60,height:60,borderRadius:30,
         backgroundColor:'#3f51b5',
         shadowColor: '#000000',shadowOffset: { width: 10, height: 10 },
-        elevation: 6,shadowOpacity: 1,shadowRadius: 6,
+        elevation: 6,shadowOpacity: 1,shadowRadius: 6,marginTop:2
        }}>
         <Icon name={icon} size={30} color='#fff' />
       </TouchableOpacity>
-    </View>
     );
   }
 }
@@ -244,16 +239,19 @@ class AdminTab extends React.Component {
         </ScrollView>
       </Overlay>
       {!is_scan &&
-      <View>
+      <View style={{
+        position:'absolute',right:16,bottom:show_action?80:16,alignItems:'center',justifyContent:'center',zIndex:9
+      }}
+      >
+        <RoundButton onPress={()=>this.setState({show_action:!show_action})}
+          icon={show_action?'close':'plus'}/>
         {show_action &&
         <View>
-          <RoundButton onPress={this.getPermissionToken} icon='user-plus' bottom={80} />
+          <RoundButton onPress={this.getPermissionToken} icon='user-plus'/>
           <RoundButton onPress={()=>this.setState({approve_status:!approve_status})}
-            icon={approve_status?'calendar-plus-o':'calendar-minus-o'} bottom={144} />
+            icon={approve_status?'calendar-plus-o':'calendar-minus-o'}/>
         </View>
         }
-        <RoundButton onPress={()=>this.setState({show_action:!show_action})}
-          icon={show_action?'close':'plus'} bottom={show_action?208:16} />
       </View>
       }
 

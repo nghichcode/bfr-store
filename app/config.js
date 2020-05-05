@@ -1,7 +1,7 @@
 const config = {
 	// host:'http://192.168.0.101/',
 	host:'http://nghichcode.com/',
-	path:'api/',
+	path:'ignite-api/api/',
 	getLocation:function(name) {
 		return this.host+this.path+name;
 	},

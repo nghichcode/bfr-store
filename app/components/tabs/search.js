@@ -1,6 +1,6 @@
 import React from 'react';
 import {View,FlatList,Alert,StatusBar,ScrollView,TouchableOpacity} from 'react-native';
-import {Badge,Image,CheckBox,Overlay,Input,Text,Card,SearchBar,ListItem} from 'react-native-elements';
+import {Badge,Image,CheckBox,Overlay,Input,Text,SearchBar,ListItem} from 'react-native-elements';
 import { Camera } from 'expo-camera';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as ImagePicker from 'expo-image-picker';
@@ -13,6 +13,7 @@ import config from '../../config.js';
 import {parseForm,parseDate,crd2m} from '../../utils.js';
 import { getUser,ROLE } from '../../models/model_utils.js';
 import {styles} from '../styles/round_theme.js';
+import DetailCard from './detail_card.js';
 
 
 class SearchTab extends React.Component {
@@ -48,10 +49,15 @@ class SearchTab extends React.Component {
     const oparams = this.props.route.params;
     const nparams = nxtProps.route.params;
     if( !oparams || (nparams && nparams.product
-      && (nparams.product.id!=oparams.product.id || nparams.product.product_id!=oparams.product.product_id)
+      && (
+        nparams.product.store_product_id!=oparams.product.store_product_id
+        || nparams.product.product_id!=oparams.product.product_id
+        || nparams.product.id!=oparams.product.id
+      )
     ) ){
       if (nparams && nparams.product) {
         const {product} = nparams;
+        product.exp = (product.exp && product.exp.length>10)?parseDate(product.exp.slice(0,10)):product.exp;
         this.setState({item:product,hideResult:true,search:product.product_name});
       }
     }
@@ -79,10 +85,6 @@ class SearchTab extends React.Component {
     } catch (e) {console.log(e);}
   };
 
-  updateSearch = (search) => {
-    this.setState({search, item:{}});
-  }
-
   handleResult = (item,user_location='') => {
     if (!item) {
       this.setState({hideResult:false,item:{}});
@@ -98,7 +100,7 @@ class SearchTab extends React.Component {
   handleAddProduct = (is_add) => {
     let {user,tokens,item,store} = this.state;
     if(
-      (item && item.id) &&
+      (item && item.store_product_id) &&
       ( !tokens || !tokens.refresh_token || (user.permission_id!=ROLE['user']) )
     ) {
       Alert.alert(
@@ -112,13 +114,11 @@ class SearchTab extends React.Component {
   }
   addProduct = () => {
     this.setState({add_processing:true});
-    const {item,add_data,store_data,image} = this.state;
+    const {item,add_data,store_data,image,tokens} = this.state;
     const maxs = config.max_size;
     const self = this;
-    // console.log('search.js:122',item);
-    if(!item || !item.id) {
-      add_data.exp = add_data.exp
-        ?Math.floor(new Date(parseDate(add_data.exp,false)).getTime() / 1000):Math.floor(new Date()/1000);
+    // console.log('search.js:116',item);
+    if(!item || (!item.store_product_id && !item.id)) {
       if(image && (image.width>maxs.width || image.height>maxs.height)) {
         Alert.alert("Lỗi", 'Kích thước ảnh không được vượt quá '+maxs.width+'x'+maxs.height+' pixel',
           [{text: "OK"}],{ cancelable: false }
@@ -137,11 +137,8 @@ class SearchTab extends React.Component {
         add_data['image_base64'] = image.base64;
       }
       fetch(config.getLocation('search/add_product/'), {
-        headers: {
-          'Content-Type': 'multipart/form-data','Accept': "application/json"
-        },
-        method: 'POST',
-        body: parseForm(add_data),
+        headers: {'Content-Type': 'multipart/form-data','Accept': "application/json"},
+        method: 'POST', body: parseForm(add_data),
       })
       .then((response) => {
         return response.json();
@@ -161,17 +158,13 @@ class SearchTab extends React.Component {
       });
     } else {
       for(let k in store_data) {if(store_data[k]=='') delete store_data[k];}
-      // let old_exp = store_data.exp;
       store_data.exp = store_data.exp
-        ?Math.floor(new Date(parseDate(store_data.exp,false)).getTime() / 1000):Math.floor(new Date()/1000);
-      store_data['id'] = item.store_id?item.product_id:item.id;
-      const {tokens} = this.state;
+        ?Math.floor(new Date(parseDate(store_data.exp,false)).getTime() / 1000)
+        :Math.floor(new Date()/1000);
+      store_data.id = item.store_id?item.product_id:item.id;
       fetch(config.getLocation('store/add_product/'), {
-        headers: {
-          'Content-Type': 'multipart/form-data','authorization': tokens.token,
-        },
-        method: 'POST',
-        body: parseForm(store_data),
+        headers: {'Content-Type': 'multipart/form-data','authorization': tokens.token,},
+        method: 'POST', body: parseForm(store_data),
       })
       .then((response) => {
         return response.json();
@@ -193,9 +186,7 @@ class SearchTab extends React.Component {
     }
   }
   setProduct = (o) => {
-    const {add_data} = this.state;
-    for (var k in o) { add_data[k] = o[k]; }
-    this.setState({add_data});
+    const {add_data} = this.state;for (var k in o) { add_data[k] = o[k]; }this.setState({add_data});
   }
   setStoreProduct = (o) => {
     const {store_data} = this.state;
@@ -238,8 +229,6 @@ class SearchTab extends React.Component {
       is_scan,user_location,store,show_timepicker,
       is_add,other_data,add_data,store_data,tokens,image,add_processing
     } = this.state;
-    const hasContact = item.city && item.street_address_one && item.street_address_two
-     && item.street_address_three && item.email && item.phone;
     const {realm} = this.props;
     return (
     <View style={{height:'100%'}}>
@@ -277,8 +266,8 @@ class SearchTab extends React.Component {
             }}>Đang xử lý...</Text>
           </View>
         }
-        {!is_scan && (item && item.id) &&
-          <ScrollView>
+        {!is_scan && (item && (item.store_product_id||item.id) ) ?
+          (<ScrollView>
             <Text style={{textAlign:'center',fontWeight:"bold",fontSize:20,color:"#fb5b5a",marginBottom:20}}>
               Thêm sản phẩm vào cửa hàng
             </Text>
@@ -320,10 +309,8 @@ class SearchTab extends React.Component {
                 <Text style={styles.white}>ĐÓNG</Text>
               </TouchableOpacity>
             </View>
-          </ScrollView>
-        }
-        {!is_scan && (!item || !item.id) &&
-          <ScrollView>
+          </ScrollView>)
+          :(<ScrollView>
             <Text style={{textAlign:'center',fontWeight:"bold",fontSize:20,color:"#fb5b5a",marginBottom:20}}>
               Thêm sản phẩm
             </Text>
@@ -437,7 +424,7 @@ class SearchTab extends React.Component {
                 <Text style={styles.white}>ĐÓNG</Text>
               </TouchableOpacity>
             </View>
-          </ScrollView>
+          </ScrollView>)
         }
         {is_scan &&
         <SearchBarATC realm={realm}
@@ -464,11 +451,22 @@ class SearchTab extends React.Component {
          }}>
           <Icon name='plus' size={40} color='#fff' />
         </TouchableOpacity>
+        <TouchableOpacity
+        onPress={()=>this.handleAddProduct(true)}
+        style={{
+          alignItems:'center',justifyContent:'center',
+          width:60,height:60,borderRadius:30,
+          backgroundColor:'#3f51b5',
+          shadowColor: '#000000',shadowOffset:  { width: 10, height: 10 },
+          elevation: 6,shadowOpacity: 1,shadowRadius: 6,
+         }}>
+          <Icon name='plus' size={40} color='#fff' />
+        </TouchableOpacity>
       </View>
       }
 
       <SearchBarATC realm={realm}
-        onChangeText={this.updateSearch} handleResult={this.handleResult}
+        onChangeText={(search) => this.setState({search, item:{}})} handleResult={this.handleResult}
         handleBarcode={this.handleBarcode}
       />
       {search==='' && !is_scan && !hideResult &&
@@ -478,181 +476,7 @@ class SearchTab extends React.Component {
         </View>
       )}
       {search!=='' && !is_scan && hideResult && item.product_name && (
-      <ScrollView style={{position:'absolute',top:60,left:0,right:0,bottom:0}}>
-        <Card
-          title={item.product_name}
-          image={{uri: config.getImage(item.img_url)}}
-          imageProps={{
-            resizeMode:'contain',
-            containerStyle:{height:300},
-            PlaceholderContent:(
-              <View style={{
-                height:'100%',width:'100%', backgroundColor:'#bf9f94',
-                justifyContent:'center',alignItems:'center'
-              }}>
-                <Text style={{textAlign:'center'}}>Không có ảnh</Text>
-              </View>
-            )
-          }}
-          containerStyle={{marginBottom:8}}
-        >
-          <View style={{marginHorizontal:8}}>
-
-            <View style={{marginBottom:10}}>
-              <Text style={styles.text20c}>Thông tin sản phẩm</Text>
-            </View>
-            <View style={styles.cards_list}>
-              <View style={{flex:1,flexDirection:'row',}}>
-                <View style={styles.card_row}>
-                  <View style={styles.card}>
-                    <View style={{flexDirection: 'row',justifyContent:'center',alignItems: 'center'}}>
-                      <Icon name='dollar' size={20} color='#ffffff'/>
-                      <Text style={{color:'#ffffff',marginLeft:4}}>{item.price}</Text>
-                    </View>
-                    <Text style={{textAlign:'center',color:'#ffffff'}}>Giá</Text>
-                  </View>
-                </View>
-                <View style={styles.card_row}>
-                  <View style={styles.card}>
-                    {item.store_id &&
-                    <View style={{flexDirection: 'row',justifyContent:'center',alignItems: 'center'}}>
-                      <Icon name='road' size={20} color='#ffffff'/>
-                      <Text style={{color:'#ffffff',marginLeft:4}}>{
-                        !user_location
-                        ?'Không rõ'
-                        :item.location
-                          ?crd2m(user_location, item.location)+'m'
-                          :'Không rõ'
-                      }</Text>
-                    </View>
-                    }
-                    {!item.store_id &&
-                    <View style={{flexDirection: 'row',justifyContent:'center',alignItems: 'center'}}>
-                      <Icon name='shield' size={20} color='#ffffff'/>
-                      <Text style={{color:'#ffffff',marginLeft:4}}>Sản phẩm gốc</Text>
-                    </View>
-                    }
-                    <Text style={{textAlign:'center',color:'#ffffff'}}>{item.store_id?'Khoảng cách':''}</Text>
-                  </View>
-                </View>
-              </View>
-              <View style={styles.card_row}>
-                <View style={styles.card}>
-                  <View style={{flexDirection: 'row',justifyContent:'center',alignItems: 'center'}}>
-                    <Icon name='barcode' size={20} color='#ffffff'/>
-                    <Text style={{color:'#ffffff',marginLeft:4}}>{item.gtin_code}</Text>
-                  </View>
-                  <Text style={{textAlign:'center',color:'#ffffff'}}>Barcode</Text>
-                </View>
-              </View>
-            </View>
-
-            <View style={styles.cards_list}>
-              <View style={styles.card_row}>
-                <View style={styles.card}>
-                    <Text style={[styles.white,styles.textBold]}>Mô tả:</Text>
-                    <Text style={styles.white}>{item.description}</Text>
-                </View>
-              </View>
-              <View style={styles.card_row}>
-                <View style={styles.card}>
-                  <Text style={[styles.white,styles.textBold]}>Nơi sản xuất:</Text>
-                  <Text style={styles.white}>{item.party_name}</Text>
-                </View>
-              </View>
-            </View>
-
-            {item.store_id &&
-            <View>
-              <View style={{marginBottom:10}}>
-                <Text style={styles.text20c}>Thông tin cửa hàng</Text>
-              </View>
-              <View style={styles.cards_list}>
-                <View style={styles.card_row}>
-                  <TouchableOpacity style={styles.card} activeOpacity={0.68}
-                    onPress={()=>{this.showStore(item);}}
-                  >
-                    <View style={{flexDirection: 'row',justifyContent:'center',alignItems: 'center'}}>
-                      {(!(store && store.storename)) &&
-                      <Icon name='info-circle' size={20} color='#ffffff'
-                        style={{position:'absolute',top:0,right:0}}
-                      />
-                      }
-                      <Icon name='home' size={20} color='#ffffff'/>
-                      <Text style={{color:'#ffffff',marginLeft:4}}>
-                        {item.storename}
-                      </Text>
-                    </View>
-                    <Text style={{textAlign:'center',color:'#ffffff'}}>Tên cửa hàng</Text>
-                  </TouchableOpacity>
-                </View>
-                <View style={{flex:1,flexDirection:'row',}}>
-                  <View style={styles.card_row}>
-                    <View style={styles.card}>
-                      <View style={{flexDirection: 'row',justifyContent:'center',alignItems: 'center'}}>
-                        <Icon name='table' size={20} color='#ffffff'/>
-                        <Text style={{color:'#ffffff',marginLeft:4}}>{item.quantity}</Text>
-                      </View>
-                      <Text style={{textAlign:'center',color:'#ffffff'}}>Số lượng</Text>
-                    </View>
-                  </View>
-                  <View style={styles.card_row}>
-                    <View style={styles.card}>
-                      <View style={{flexDirection: 'row',justifyContent:'center',alignItems: 'center'}}>
-                        <Ionicons name='ios-timer' size={20} color='#ffffff'/>
-                        <Text style={{color:'#ffffff',marginLeft:4}}>{
-                          item.exp?item.exp:''
-                        }</Text>
-                      </View>
-                      <Text style={{textAlign:'center',color:'#ffffff'}}>Ngày hết hạn</Text>
-                    </View>
-                  </View>
-                </View>
-              </View>
-            </View>
-            }
-
-            {hasContact &&
-            <View>
-              <View style={{marginBottom:10}}>
-                <Text style={styles.text20c}>Thông tin liên hệ</Text>
-              </View>
-              <View style={styles.cards_list}>
-                <View style={styles.card_row}>
-                  <View style={styles.card}>
-                    {item.city && <View>
-                      <Text style={[styles.white,styles.textBold]}>Thành phố:</Text>
-                      <Text style={styles.white}>{item.city}</Text>
-                    </View>}
-                    {item.street_address_one && <View>
-                      <Text style={[styles.white,styles.textBold]}>Địa chỉ sản xuất 1:</Text>
-                      <Text style={styles.white}>{item.street_address_one}</Text>
-                    </View>}
-                    {item.street_address_two && <View>
-                      <Text style={[styles.white,styles.textBold]}>Địa chỉ sản xuất 2:</Text>
-                      <Text style={styles.white}>{item.street_address_two}</Text>
-                    </View>}
-                    {item.street_address_three && <View>
-                      <Text style={[styles.white,styles.textBold]}>Địa chỉ sản xuất 3:</Text>
-                      <Text style={styles.white}>{item.street_address_three}</Text>
-                    </View>}
-                    {item.email && <View>
-                      <Text style={[styles.white,styles.textBold]}>Email:</Text>
-                      <Text style={styles.white}>{item.email}</Text>
-                    </View>}
-                    {item.phone && <View>
-                      <Text style={[styles.white,styles.textBold]}>Số điện thoại:</Text>
-                      <Text style={styles.white}>{item.phone}</Text>
-                    </View>}
-                  </View>
-                </View>
-              </View>
-            </View>
-            }
-
-          </View>
-        </Card>
-      </ScrollView>
+        <DetailCard item={item} store={store} showStore={this.showStore} user_location={user_location} />
       )}
     </View>
     );
