@@ -2,3 +2,7 @@ cd android/
 gradlew assembleDebug
 cd ../
 npm start --reset-cache
+//Tao aab
+gradlew bundleRelease
+//Tao apk
+gradlew assembleRelease

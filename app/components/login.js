@@ -21,7 +21,7 @@ class Login extends React.Component {
       is_register: false,processing: false,
       hasCameraPermission:null,
 			username:config.username,image:null,
-	    password:config.password,repassword:"",remember:false,
+	    password:config.password,repassword:"",remember:true,
 	    regdata: {
 	    	first_name:"",
 	    	last_name:"",

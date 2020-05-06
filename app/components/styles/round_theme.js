@@ -43,6 +43,7 @@ const styles = StyleSheet.create({
   // ADD
   mb20:{marginBottom:20,},
   mb5:{marginBottom:5,},
+  mx:{marginHorizontal:'2%'},
   mt40:{marginTop:40,},
   w80p:{width:"80%",},
   w100p:{width:"100%",},

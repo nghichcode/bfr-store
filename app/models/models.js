@@ -10,7 +10,7 @@ const ROLE_NAME = {
 };
 
 const mapobj = function (obj){
-  for(i in obj){
+  for(let i in obj){
     if(i in this.properties && i!='id' && obj[i]!=null){
       this.properties[i]=(isNaN(obj[i])||(obj[i]==''))?obj[i]:parseInt(obj[i]);
     }
@@ -106,9 +106,21 @@ const StoreLabel = {
   }
 };
 
+const ObjectMap = function(){
+  this.name = '';
+  this.properties = {};
+  this.mapobj = function(obj) {
+    for(let i in obj){
+      if(obj[i]!=null){
+        this.properties[i]=(isNaN(obj[i])||(obj[i]==''))?obj[i]:parseInt(obj[i]);
+      }
+    }
+  };
+};
+
 export {
 	TokenSchema,UserSchema,StoreSchema,
   TokenObj,UserObj,StoreObj,
   UserLabel,StoreLabel,
-  ROLE_NAME,ROLE,
+  ROLE_NAME,ROLE,ObjectMap
 };

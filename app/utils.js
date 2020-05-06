@@ -1,5 +1,13 @@
+function normalize(s) {
+  return s
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd');
+}
+
 function parseDate(date, locale=true){
-  let ldate='';
+  let ldate = '';
   if(locale) {
     if (date && new Date(date)!='Invalid Date'){
       ldate = new Date(date).toISOString().slice(0, 10).split('-');
@@ -35,7 +43,8 @@ function vi2en(viTxt) {
 		}
 		str+=tmp;
 	}
-    return {res:str,finish:function () {console.log("Finish:"+Date.now());}};
+    // return {res:str,finish:function () {console.log("Finish:"+Date.now());}};
+    return str;
 }
 // var viUpp="ÀÁẠẢÃÂẦẤẬẨẪĂẰẮẶẲẴÈÉẸẺẼÊỀẾỆỂỄÌÍỊỈĨÒÓỌỎÕÔỒỐỘỔỖƠỜỚỢỞỠÙÚỤỦŨƯỪỨỰỬỮỲÝỴỶỸĐ";
 function vi2en_r(viTxt) {
@@ -92,5 +101,5 @@ const crd2m=function(f,t){
 
 
 export {
-	parseForm, parseDate, crd2m
+	parseForm, parseDate, crd2m, normalize
 };

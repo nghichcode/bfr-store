@@ -10,7 +10,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 import config from '../../config.js';
-import {parseForm,parseDate,crd2m} from '../../utils.js';
+import {parseForm,parseDate,crd2m,normalize} from '../../utils.js';
 import { getUser,ROLE } from '../../models/model_utils.js';
 import {styles} from '../styles/round_theme.js';
 import DetailCard from './detail_card.js';
@@ -31,7 +31,7 @@ class SearchTab extends React.Component {
         email:'',phone:''
       },
       image:null,
-      store_data: {
+      store_product: {
         price:null,quantity:null,exp:''
       },
       other_data:false,
@@ -114,31 +114,33 @@ class SearchTab extends React.Component {
   }
   addProduct = () => {
     this.setState({add_processing:true});
-    const {item,add_data,store_data,image,tokens} = this.state;
+    const {item,add_data,store_product,image,tokens} = this.state;
     const maxs = config.max_size;
     const self = this;
     // console.log('search.js:116',item);
     if(!item || (!item.store_product_id && !item.id)) {
       if(image && (image.width>maxs.width || image.height>maxs.height)) {
-        Alert.alert("Lỗi", 'Kích thước ảnh không được vượt quá '+maxs.width+'x'+maxs.height+' pixel',
-          [{text: "OK"}],{ cancelable: false }
-        );
+        Alert.alert("Lỗi", 'Kích thước ảnh không được vượt quá '+maxs.width+'x'+maxs.height+' pixel');
         this.setState({add_processing:false});
         return;
       }
-      for(let k in add_data) {
-        if(add_data[k]=='') delete add_data[k];
-        if (k=='gtin_code' && add_data[k] && add_data[k].length==13) {
-          add_data[k]='0'+add_data[k];
-          this.setState({add_data});
-        }
+      if(!add_data.product_name) {
+        Alert.alert("Lỗi", 'Không được để trống tên sản phẩm');
+        this.setState({add_processing:false});
+        return;
       }
+      let add_data_tmp = Object.assign({},add_data);
+      for(let k in add_data_tmp) {if(add_data_tmp[k]=='') delete add_data_tmp[k];}
+      if (add_data_tmp.gtin_code && add_data_tmp.gtin_code.length==13) {
+        add_data_tmp.gtin_code='0'+add_data_tmp.gtin_code;
+      }
+        
       if(image && image.type && image.base64){
-        add_data['image_base64'] = image.base64;
+        add_data_tmp['image_base64'] = image.base64;
       }
       fetch(config.getLocation('search/add_product/'), {
         headers: {'Content-Type': 'multipart/form-data','Accept': "application/json"},
-        method: 'POST', body: parseForm(add_data),
+        method: 'POST', body: parseForm(add_data_tmp),
       })
       .then((response) => {
         return response.json();
@@ -157,14 +159,15 @@ class SearchTab extends React.Component {
         Alert.alert("Lỗi", error.message,[{text: "OK", onPress: () => null}],{ cancelable: false });
       });
     } else {
-      for(let k in store_data) {if(store_data[k]=='') delete store_data[k];}
-      store_data.exp = store_data.exp
-        ?Math.floor(new Date(parseDate(store_data.exp,false)).getTime() / 1000)
+      let store_product_tmp = Object.assign({},store_product);
+      for(let k in store_product_tmp) {if(store_product_tmp[k]=='') delete store_product_tmp[k];}
+      store_product_tmp.exp = store_product_tmp.exp
+        ?Math.floor(new Date(parseDate(store_product_tmp.exp,false)).getTime() / 1000)
         :Math.floor(new Date()/1000);
-      store_data.id = item.store_id?item.product_id:item.id;
+      store_product_tmp.id = item.store_id?item.product_id:item.id;
       fetch(config.getLocation('store/add_product/'), {
         headers: {'Content-Type': 'multipart/form-data','authorization': tokens.token,},
-        method: 'POST', body: parseForm(store_data),
+        method: 'POST', body: parseForm(store_product_tmp),
       })
       .then((response) => {
         return response.json();
@@ -189,9 +192,9 @@ class SearchTab extends React.Component {
     const {add_data} = this.state;for (var k in o) { add_data[k] = o[k]; }this.setState({add_data});
   }
   setStoreProduct = (o) => {
-    const {store_data} = this.state;
-    for (var k in o) { store_data[k] = o[k]; }
-    this.setState({store_data});
+    const {store_product} = this.state;
+    for (var k in o) { store_product[k] = o[k]; }
+    this.setState({store_product});
   }
 
   showStore = (item)=>{
@@ -227,7 +230,7 @@ class SearchTab extends React.Component {
     let {
       search,hideResult,item,user,
       is_scan,user_location,store,show_timepicker,
-      is_add,other_data,add_data,store_data,tokens,image,add_processing
+      is_add,other_data,add_data,store_product,tokens,image,add_processing
     } = this.state;
     const {realm} = this.props;
     return (
@@ -237,9 +240,9 @@ class SearchTab extends React.Component {
         <DateTimePicker
           timeZoneOffsetInMinutes={ (-1)*(new Date()).getTimezoneOffset() }
           value={
-            (!store_data || !store_data.exp
-              || new Date(parseDate(store_data.exp, false))=='Invalid Date')
-              ? new Date() : new Date(parseDate(store_data.exp, false))
+            (!store_product || !store_product.exp
+              || new Date(parseDate(store_product.exp, false))=='Invalid Date')
+              ? new Date() : new Date(parseDate(store_product.exp, false))
           }
           mode='date'
           display="default"
@@ -281,31 +284,31 @@ class SearchTab extends React.Component {
             <Input
               label="Giá" placeholder="12000"
               labelStyle={styles.orange} containerStyle={styles.mb5}
-              value={store_data.price}
+              value={store_product.price}
               onChangeText={text => this.setStoreProduct({price:text})}/>
             <Input
               label="Số lượng" placeholder="100"
               labelStyle={styles.orange} containerStyle={styles.mb5}
-              value={store_data.quantity}
+              value={store_product.quantity}
               onChangeText={text => this.setStoreProduct({quantity:text})}/>
             <Input
               label="Hạn sử dụng" placeholder="dd/mm/yyyy"
               labelStyle={styles.orange} containerStyle={styles.mb5}
-              value={store_data.exp}
+              value={store_product.exp}
               leftIcon={
                 <Icon name='calendar' size={40} color='tomato'
                   onPress={()=>this.setState({show_timepicker:true})} />
               }
               onChangeText={text => this.setStoreProduct({exp:text})}/>
 
-            <View style={styles.center}>
+            <View style={[styles.center,styles.mx]}>
               <TouchableOpacity onPress={this.addProduct} style={[
-                styles.roundBtn,styles.mt40,styles.bgsuccess,styles.w80p
+                styles.roundBtn,styles.mt40,styles.bgsuccess,styles.w100p
                 ]}>
                 <Text style={styles.white}>THÊM SẢN PHẨM</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => this.setState({ is_add: false })}
-                style={[styles.roundBtn,styles.bgred,styles.w80p]}>
+                style={[styles.roundBtn,styles.bgred,styles.w100p]}>
                 <Text style={styles.white}>ĐÓNG</Text>
               </TouchableOpacity>
             </View>
@@ -451,17 +454,6 @@ class SearchTab extends React.Component {
          }}>
           <Icon name='plus' size={40} color='#fff' />
         </TouchableOpacity>
-        <TouchableOpacity
-        onPress={()=>this.handleAddProduct(true)}
-        style={{
-          alignItems:'center',justifyContent:'center',
-          width:60,height:60,borderRadius:30,
-          backgroundColor:'#3f51b5',
-          shadowColor: '#000000',shadowOffset:  { width: 10, height: 10 },
-          elevation: 6,shadowOpacity: 1,shadowRadius: 6,
-         }}>
-          <Icon name='plus' size={40} color='#fff' />
-        </TouchableOpacity>
       </View>
       }
 
@@ -531,10 +523,14 @@ class SearchBarATC extends React.Component {
     }
 
     const {search,list,count_text} = this.state;
-    if(count>count_text && search && text.includes(search)) {
+    if(count>=count_text && search && text.includes(search)) {
       this.setState({
         isEmpty: text === '',search: text,hideResult:false,
-        list: list.filter((it) => { return it.product_name.includes(text)||it.gtin_code.includes(text); })
+        list: list.filter((it) => {
+          return it.product_name.includes(text)
+            ||it.gtin_code.includes(text)
+            ||it.product_name_alpha.includes(normal_txt);
+        })
       });
       handleResult(null);
       return;
@@ -669,8 +665,11 @@ class SearchBarATC extends React.Component {
                 </Text>
               }
               subtitle={<View>
-                <Text style={{color:'#607d8b'}}>{item.storename}</Text>
                 <Text style={{color:'#9e9e9e'}}>{item.gtin_code}</Text>
+                {item.exp && <Text style={{color:'#9e9e9e'}}>EXP: {
+                  (item.exp.length>10)?parseDate(item.exp.slice(0,10)):item.exp
+                }</Text>}
+                {item.storename && <Text style={{color:'#607d8b'}}>{item.storename}</Text>}
               </View>}
               rightSubtitle={<View>
                 <Text style={{color:'#9e9e9e'}}>{item.price}</Text>

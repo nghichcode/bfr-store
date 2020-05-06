@@ -198,6 +198,10 @@ class AdminTab extends React.Component {
                 </View>
               }
               subtitle={item.gtin_code}
+              subtitle={<View>
+                <Text style={{color:'#9e9e9e'}}>{item.gtin_code}</Text>
+                <Text style={{color:'#9e9e9e'}}>slug: {item.product_name_alpha}</Text>
+              </View>}
               rightSubtitle={item.price}
               leftAvatar={{ source: { uri: config.getImage(item.img_url) } }}
               leftElement={

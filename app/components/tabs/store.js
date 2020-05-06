@@ -236,7 +236,12 @@ class StoreTab extends React.Component {
                   {item.is_trusted>0 && <Icon name='star' size={10} color='tomato'/>}
                 </Text>
               }
-              subtitle={item.gtin_code}
+              subtitle={<View>
+                <Text style={{color:'#9e9e9e'}}>{item.gtin_code}</Text>
+                {item.exp && <Text style={{color:'#9e9e9e'}}>EXP: {
+                  (item.exp.length>10)?parseDate(item.exp.slice(0,10)):item.exp
+                }</Text>}
+              </View>}
               rightSubtitle={item.price}
               leftAvatar={{ source: { uri: config.getImage(item.img_url) } }}
               leftElement={

@@ -5,6 +5,7 @@ import {Button,SearchBar} from 'react-native-elements';
 import { Camera } from 'expo-camera';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import {normalize} from '../../utils.js';
 
 
 class SearchBarATC extends React.Component {
@@ -36,7 +37,7 @@ class SearchBarATC extends React.Component {
     if(onChangeText) {onChangeText(text);}
 
     const count = text.split(' ').filter((it)=>it).length;
-    if (get_all && (count==0 || count!=count_text)) {//All
+    if (get_all && (count==0)) {//All
       // console.log('search_bar_atc.js:40',count);
       this.setState({ search: text,count_text:count });
       if(fetchData) {fetchData(text, this.fetchSuccess);}
@@ -49,10 +50,15 @@ class SearchBarATC extends React.Component {
       return;
     }
 
-    if(count>count_text && search && text.includes(search)) {
+    if(count>=count_text && search && text.includes(search)) {
+      let normal_txt = normalize(text);
       this.setState({
         search: text,
-        list: list.filter((it) => { return it.product_name.includes(text)||it.gtin_code.includes(text); })
+        list: list.filter((it) => {
+          return it.product_name.includes(text)
+          ||it.gtin_code.includes(text)
+          ||it.product_name_alpha.includes(normal_txt);
+        }),
       });
       resultData(list);
       return;
