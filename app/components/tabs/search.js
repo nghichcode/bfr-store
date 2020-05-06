@@ -523,7 +523,8 @@ class SearchBarATC extends React.Component {
     }
 
     const {search,list,count_text} = this.state;
-    if(count>=count_text && search && text.includes(search)) {
+    if(count>count_text && search && text.includes(search)) {
+      let normal_txt = normalize(text);
       this.setState({
         isEmpty: text === '',search: text,hideResult:false,
         list: list.filter((it) => {
