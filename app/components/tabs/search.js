@@ -82,7 +82,7 @@ class SearchTab extends React.Component {
       if (!result.cancelled) {
         this.setState({ image: result });
       }
-    } catch (e) {console.log(e);}
+    } catch (e) {Alert.alert('Lỗi','Vui lòng cấp quyền mở file!\n'+e);;}
   };
 
   handleResult = (item,user_location='') => {
@@ -189,11 +189,11 @@ class SearchTab extends React.Component {
     }
   }
   setProduct = (o) => {
-    const {add_data} = this.state;for (var k in o) { add_data[k] = o[k]; }this.setState({add_data});
+    const {add_data} = this.state;for (let k in o) { add_data[k] = o[k]; }this.setState({add_data});
   }
   setStoreProduct = (o) => {
     const {store_product} = this.state;
-    for (var k in o) { store_product[k] = o[k]; }
+    for (let k in o) { store_product[k] = o[k]; }
     this.setState({store_product});
   }
 
@@ -545,7 +545,7 @@ class SearchBarATC extends React.Component {
         limit: 100,
         offset : 0,
         store_search:0,
-        search : text,
+        search : text.trim(),
       };
       fetch(config.getLocation('search/search_store_product/'), {
         headers: {'Content-Type': 'multipart/form-data',},

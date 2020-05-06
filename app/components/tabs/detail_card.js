@@ -11,7 +11,9 @@ import {styles} from '../styles/round_theme.js';
 
 class DetailCard extends React.Component {
   render() {
-    const {item, store, showStore, user_location} = this.props;
+    const {store, showStore, user_location} = this.props;
+    const item = Object.assign({},this.props.item);
+    for(let k in item) { if(item[k]=='null') delete item[k];}
     const hasContact = item.city && item.street_address_one && item.street_address_two
      && item.street_address_three && item.email && item.phone;
     return (

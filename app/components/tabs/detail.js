@@ -44,10 +44,16 @@ class DetailTab extends React.Component {
   }
 
   componentDidMount() {
-    this.initUser(this.props.realm);
-    const tokens = getToken(this.props.realm);
-    this.setState({update_location:false, tokens});
-    // this.enableGPS();
+    this.mounted = true;
+    if(this.mounted) {
+      this.initUser(this.props.realm);
+      const tokens = getToken(this.props.realm);
+      this.setState({update_location:false, tokens});
+      // this.enableGPS();
+    }
+  }
+  componentWillUnmount(){
+    this.mounted = false;
   }
 
   initUser = (realm) => {

@@ -67,7 +67,7 @@ class SearchBarATC extends React.Component {
     this.setState({search: text});
     if ( count!=count_text ) {//Has Change
       this.setState({count_text:count});
-      if(fetchData) {fetchData(text, this.fetchSuccess);}
+      if(fetchData) {fetchData(text.trim(), this.fetchSuccess);}
     }
   }
   fetchSuccess = (list) => {

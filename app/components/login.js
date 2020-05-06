@@ -46,7 +46,7 @@ class Login extends React.Component {
       if (!result.cancelled) {
         this.setState({ image: result });
       }
-    } catch (e) {console.log(e);}
+    } catch (e) { Alert.alert("Lỗi", 'Vui lòng cấp quyền.'); }
   };
 
   handleSignUp = () => {

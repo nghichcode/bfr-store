@@ -54,7 +54,7 @@ class App extends React.Component {
         }
       })
       .catch((error) => {
-        console.log('e',error);
+        Alert.alert("Lỗi", error.message);
         this.setState({loading:false, is_login:false});
       });
 
