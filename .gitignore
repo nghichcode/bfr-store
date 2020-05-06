@@ -64,3 +64,4 @@ buck-out/
 /ios/Pods/
 
 #CONFIG
+/app/config.js
