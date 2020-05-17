@@ -1,5 +1,5 @@
 import React from 'react';
-import {ScrollView,Alert,View,Button,FlatList,TouchableOpacity} from 'react-native';
+import {ScrollView,Alert,View,Button,FlatList,TouchableOpacity,Linking,Platform} from 'react-native';
 import {Card,Text,ListItem,Overlay,Input} from 'react-native-elements';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -115,6 +115,17 @@ class StoreTab extends React.Component {
 
   }
 
+  openMap = (location, label) => {
+  	if(!location || location.split(';').length!=2){return;}
+		const scheme = Platform.select({ ios: 'maps:0,0?q=', android: 'geo:0,0?q=' });
+		const latLng = location.replace(';',',');
+		const url = Platform.select({
+		  ios: `${scheme}${label}@${latLng}`,
+		  android: `${scheme}${latLng}(${label})`
+		});
+		Linking.openURL(url);
+  }
+
   render() {
     const {route,navigation} = this.props;
     const {list,loading,tokens,is_scan,edit_item,user,show_timepicker} = this.state;
@@ -154,13 +165,15 @@ class StoreTab extends React.Component {
 
               <View style={styles.cards_list}>
                 <View style={styles.card_row}>
-                  <View style={styles.card}>
+                  <TouchableOpacity style={styles.card} activeOpacity={0.68}
+                    onPress={()=>this.openMap(store.location,store.storename)}
+                  >
                     <View style={styles.rowcenter}>
                       <Icon name='map-marker' size={20} color='#ffffff'/>
                       <Text style={{color:'#ffffff',marginLeft:8}}>{store.location}</Text>
                     </View>
                     <Text style={{textAlign:'center',color:'#ffffff'}}>Tọa độ</Text>
-                  </View>
+                  </TouchableOpacity>
                 </View>
 
                 <View style={{flex:1,flexDirection:'row',}}>
