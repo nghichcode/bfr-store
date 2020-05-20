@@ -6,3 +6,6 @@ npm start --reset-cache
 gradlew bundleRelease
 //Tao apk
 gradlew assembleRelease
+
+// Cam lai usb
+adb reverse tcp:8081 tcp:8081

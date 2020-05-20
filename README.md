@@ -46,7 +46,7 @@ Mọi món hàng được đăng công khai sẽ được kiểm duyệt bởi c
 | 3.3 | Store | [x] Sửa/Xóa | Store sửa/Xóa sản phẩm riêng của store lưu vào bảng bfs_store_product |
 | 3.1 | Search | [x] Search | Tìm kiếm thông tin hàng hóa bằng tên hoặc mã gtin (bfs_product, bfs_store_product). Có thêm tham số (limit, offset)-(giới hạn số lương sản phẩm, lấy từ sản phẩm thứ). Ví dụ : Lấy từ 10 sản phẩm, tính từ sản phẩm thứ 5 => LIMIT 5, 10. Và ngoài trả về các sản phẩm cần trả về thêm total là tổng sản phẩm query được. |
 | 3.2 | Search | [x] Thêm mới | Người dùng bất kỳ thêm mới sản phẩm vào bảng bfs_product |
-| 3.2.1 | Search | [x] Thêm ảnh | Người dùng bất kỳ thêm mới sản phẩm vào bảng bfs_product sẽ truyền cả ảnh vào |
+| 3.2.1 | Search | [x] Thêm ảnh | Người dùng bất kỳ thêm mới sản phẩm vào bảng bfs_product sẽ truyền cả ảnh vào. |
 | 4.1 | User Detail | [x] Cập nhật thông tin | Cập nhật first_name,last_name,email vầo bảng bfs_user  |
-| 4.2 | User Detail | [x] Cập nhật thông tin | Cập nhật location,hide_location,hide_detail,description vào bảng bfs_store |
+| 4.2 | User Detail | [x] Cập nhật thông tin | Cập nhật img_url,location,hide_location,hide_detail,description vào bảng bfs_store đối với cửa hàng |
 
