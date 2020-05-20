@@ -293,12 +293,12 @@ class Login extends React.Component {
 
           <View style={styles.center}>
             <TouchableOpacity onPress={this.handleSignUp}
-              style={[styles.roundBtn,styles.bgsuccess,styles.mt40,styles.w80p]}
+              style={[styles.roundBtn,styles.bgsuccess,styles.mt40,styles.w100p]}
             >
               <Text style={styles.white}>ĐĂNG KÝ</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => this.setState({ is_register: false })}
-              style={[styles.roundBtn,styles.bgred,styles.w80p]}>
+              style={[styles.roundBtn,styles.bgred,styles.w100p]}>
               <Text style={styles.white}>ĐÓNG</Text>
             </TouchableOpacity>
           </View>

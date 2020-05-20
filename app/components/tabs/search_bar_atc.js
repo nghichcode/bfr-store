@@ -6,13 +6,13 @@ import { Camera } from 'expo-camera';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {normalize} from '../../utils.js';
-
+import { getUser } from '../../models/model_utils.js';
 
 class SearchBarATC extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      search: '',
+      search: '',user_location:'',
       count_text: 0,
       list: [],
       is_scan:false,
@@ -27,9 +27,18 @@ class SearchBarATC extends React.Component {
       const { status } = await Camera.requestPermissionsAsync();
       this.setState({ hasCameraPermission: status === 'granted' });
       if (this.props.get_all) { this.onChangeText(''); }
+      this.setLocation();
     }
   }
   componentWillUnmount(){this.mounted = false;}
+
+  setLocation = () => {
+    if(!this.props.realm){return;}
+    const {store} = getUser(this.props.realm);
+    if(store && store.location){
+      this.setState({user_location:store.location});
+    }
+  }
 
   onChangeText = (text, force_update=false) => {
     const {search,list,count_text} = this.state;//Include text
@@ -50,7 +59,7 @@ class SearchBarATC extends React.Component {
       return;
     }
 
-    if(count>count_text && search && text.includes(search)) {
+    if(count==count_text && search && text.includes(search)) {
       let normal_txt = normalize(text);
       this.setState({
         search: text,

@@ -14,13 +14,14 @@ import {parseForm,parseDate,crd2m,normalize} from '../../utils.js';
 import { getUser,ROLE } from '../../models/model_utils.js';
 import {styles} from '../styles/round_theme.js';
 import DetailCard from './detail_card.js';
+import SearchBarATC from './search_bar_atc.js';
 
 
 class SearchTab extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      search: '',
+      search: '',list:[],
       hideResult:false, show_timepicker:false,
       user_location:'',
       is_add: false,
@@ -93,10 +94,39 @@ class SearchTab extends React.Component {
       this.setState({hideResult:true,item:item,user_location});
     }
   }
-  handleBarcode = (is_scan,search) => {
-    this.setState({is_scan});
-    if (search) { this.setProduct({gtin_code:search}); }
+  fetchData = (search, fetchSuccess) => {
+    const self = this;
+    const params = {
+      limit: 100,
+      offset : 0,
+      store_search:0,
+      search : search,
+    };
+    fetch(config.getLocation('search/search_store_product/'), {
+      headers: {'Content-Type': 'multipart/form-data',},
+      method: 'POST',
+      body: parseForm(params),
+    })
+    .then((response) => {
+      return response.json();
+    })
+    .then((json) => {
+      if(json.error) {
+        Alert.alert("Lỗi", json.message+' : '+json.code,[{text: "OK"}],{ cancelable: false });
+      } else {
+        var data = [];
+        data = data.concat(json.store_products?json.store_products.data:[]);
+        data = data.concat(json.products?json.products.data:[]);
+        self.setState({list:data});
+      }
+    })
+    .catch((error) => {
+      self.setState({processing:false});
+      Alert.alert("Lỗi", error.message,[{text: "OK", onPress: () => null}],{ cancelable: false });
+    });
   }
+
+
   handleAddProduct = (is_add) => {
     let {user,tokens,item,store} = this.state;
     if(
@@ -228,7 +258,7 @@ class SearchTab extends React.Component {
 
   render() {
     let {
-      search,hideResult,item,user,
+      search,list,hideResult,item,user,
       is_scan,user_location,store,show_timepicker,
       is_add,other_data,add_data,store_product,tokens,image,add_processing
     } = this.state;
@@ -301,9 +331,9 @@ class SearchTab extends React.Component {
               }
               onChangeText={text => this.setStoreProduct({exp:text})}/>
 
-            <View style={[styles.center,styles.mx]}>
+            <View style={[styles.center]}>
               <TouchableOpacity onPress={this.addProduct} style={[
-                styles.roundBtn,styles.mt40,styles.bgsuccess,styles.w100p
+                styles.roundBtn,styles.bgsuccess,styles.w100p,styles.mt40,
                 ]}>
                 <Text style={styles.white}>THÊM SẢN PHẨM</Text>
               </TouchableOpacity>
@@ -418,12 +448,12 @@ class SearchTab extends React.Component {
 
             <View style={styles.center}>
               <TouchableOpacity onPress={this.addProduct} style={[
-                styles.roundBtn,styles.mt40,styles.bgsuccess,styles.w80p
+                styles.roundBtn,styles.bgsuccess,styles.w100p,styles.mt40
                 ]}>
                 <Text style={styles.white}>THÊM SẢN PHẨM</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => this.setState({ is_add: false })}
-                style={[styles.roundBtn,styles.bgred,styles.w80p]}>
+                style={[styles.roundBtn,styles.bgred,styles.w100p]}>
                 <Text style={styles.white}>ĐÓNG</Text>
               </TouchableOpacity>
             </View>
@@ -431,8 +461,12 @@ class SearchTab extends React.Component {
         }
         {is_scan &&
         <SearchBarATC realm={realm}
-          onChangeText={null} handleResult={()=>null}
-          handleBarcode={this.handleBarcode} show_scan={is_scan}
+          onChangeText={null} show_scan={true}
+          get_all={false} reload={false}
+          barcodeRecognized={(barcodes, is_scan)=> {
+            this.setState({is_scan});
+            this.setProduct({gtin_code:barcodes.data});
+          } }
         />
         }
         </View>
@@ -458,204 +492,17 @@ class SearchTab extends React.Component {
       }
 
       <SearchBarATC realm={realm}
-        onChangeText={(search) => this.setState({search, item:{}})} handleResult={this.handleResult}
-        handleBarcode={this.handleBarcode}
-      />
-      {search==='' && !is_scan && !hideResult &&
-      (
-        <View style={{paddingTop: 5,}}>
-          <Text style={{textAlign:'center'}}>Chưa có kết quả.</Text>
-        </View>
-      )}
-      {search!=='' && !is_scan && hideResult && item.product_name && (
-        <DetailCard item={item} store={store} showStore={this.showStore} user_location={user_location} />
-      )}
-    </View>
-    );
-  }
-}
-
-class SearchBarATC extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      search: '',
-      isEmpty: true,
-      hideResult:true,
-      is_scan:false,
-      hasCameraPermission:null,
-      user_location:'',
-      flash:false,
-      count_text: 0,
-      list: []
-    };
-  }
-
-  async componentDidMount() {
-    this.mounted = true;
-    if(this.mounted) {
-      const { status } = await Camera.requestPermissionsAsync();
-      this.setState({ hasCameraPermission: status === 'granted' });
-      this.setLocation();
-    }
-  }
-  componentWillUnmount(){
-    this.mounted = false;
-  }
-
-  setLocation = () => {
-    const {store} = getUser(this.props.realm);
-    if(store && store.location){
-      this.setState({user_location:store.location});
-    }
-  }
-
-  onChangeText = text => {
-    const {onChangeText,handleResult,store_search} = this.props;
-    const self = this;
-    if(!onChangeText || !handleResult){return;}
-    onChangeText(text);
-    if(!this.state.user_location){this.setLocation();}
-    const count = text.split(' ').filter((it)=>it).length;
-    if(!text) {
-      this.setState({ isEmpty: text === '',search: text,hideResult:true,count_text:count });
-      return;
-    }
-
-    const {search,list,count_text} = this.state;
-    if(count>count_text && search && text.includes(search)) {
-      let normal_txt = normalize(text);
-      this.setState({
-        isEmpty: text === '',search: text,hideResult:false,
-        list: list.filter((it) => {
-          return it.product_name.includes(text)
-            ||it.gtin_code.includes(text)
-            ||it.product_name_alpha.includes(normal_txt);
-        })
-      });
-      handleResult(null);
-      return;
-    }
-
-    this.setState({isEmpty: text === '',search: text,hideResult:false});
-    handleResult(null);
-    if ( count!=count_text ) {
-      this.setState({count_text:count});
-      const params = {
-        limit: 100,
-        offset : 0,
-        store_search:0,
-        search : text.trim(),
-      };
-      fetch(config.getLocation('search/search_store_product/'), {
-        headers: {'Content-Type': 'multipart/form-data',},
-        method: 'POST',
-        body: parseForm(params),
-      })
-      .then((response) => {
-        return response.json();
-      })
-      .then((json) => {
-        if(json.error) {
-          Alert.alert("Lỗi", json.message+' : '+json.code,[{text: "OK"}],{ cancelable: false });
-        } else {
-          var data = [];
-          data = data.concat(json.store_products?json.store_products.data:[]);
-          data = data.concat(json.products?json.products.data:[]);
-          self.setState({list:data});
-        }
-      })
-      .catch((error) => {
-        self.setState({processing:false});
-        Alert.alert("Lỗi", error.message,[{text: "OK", onPress: () => null}],{ cancelable: false });
-      });
-    }
-  };
-
-  barcodeRecognized = (barcodes, is_scan=false) => {
-    if(barcodes) {
-      this.onChangeText(barcodes.data);
-    }
-    this.props.handleBarcode(is_scan,barcodes?barcodes.data:'');
-    this.setState({is_scan});
-  }
-
-  handleResult = (item) => {
-    this.setState({hideResult:true});
-    this.props.handleResult(item, this.state.user_location);
-  }
-
-  render() {
-    const {search,isEmpty,hideResult,is_scan,flash,user_location} = this.state;
-    const {handleResult,show_scan} = this.props;
-
-    if (is_scan || show_scan) {
-      return(
-        <View style={{height:'100%'}}>
-          <Camera style={{height:'100%',width: '100%',zIndex:16}}
-            type={Camera.Constants.Type.back}
-            flashMode={flash?Camera.Constants.FlashMode.torch:Camera.Constants.FlashMode.off}
-            onBarCodeScanned={ this.barcodeRecognized }>
-              <View 
-              style={{marginBottom:10, display:'flex',flex:1,flexDirection:'column-reverse',alignItems:'center'}}
-              >
-                <View style={{flex:0,flexDirection:'row', marginBottom:4}}>
-                  <TouchableOpacity onPress={()=>{this.barcodeRecognized(false);}}
-                  style={[
-                    {flex:3,marginHorizontal: '5%'},styles.roundBtn,styles.bgsuccess
-                  ]}>
-                    <Text style={styles.white}>Đóng</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={()=>{this.setState({flash:!flash});}}
-                  style={[
-                    {flex:0,marginHorizontal: '5%',width:40},styles.roundBtn,styles.bgsuccess
-                  ]}>
-                    <Text style={styles.white}><Ionicons name='ios-flash' size={20} color='#fff'/></Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-          </Camera>
-
-        </View>
-      );
-    }
-
-    return (
-    <View style={{backgroundColor: '#f44336cc',zIndex:15,height:isEmpty || hideResult?'auto':'100%'}}>
-      <View style={{height: 60}}>
-        <View style={{width: '90%'}}>
-          <SearchBar
-            lightTheme={true}
-            placeholder="Type Here..."
-            containerStyle={{
-              backgroundColor: '#fff',borderTopWidth: 1,borderBottomWidth: 1,
-              borderBottomColor: '#ddd',borderTopColor: '#ddd',
-            }}
-            inputContainerStyle={{backgroundColor: '#eee',height:'100%'}}
-            onChangeText={this.onChangeText}
-            value={search}
-          />
-        </View>
-        <View style={{
-          position: 'absolute',right: 0, top: 0, width: '10%', height: '100%',
-          flex: 1,flexDirection: 'row',justifyContent: 'center',alignItems: 'center',
-          backgroundColor: '#fff',borderTopWidth: 1,borderBottomWidth: 1,
-          borderBottomColor: '#ddd',borderTopColor: '#ddd',
-        }}>
-          <View style={{padding:0, margin:0,marginRight:6}} >
-            <Icon name='qrcode' size={40} color='gray'
-              onPress={()=>{this.barcodeRecognized(null,true);}}
-            />
-          </View>
-        </View>
-      </View>
-      { !isEmpty && !hideResult &&
-      (
-        <View style={{position:'absolute',top:60,left:0,right:0,bottom:0}}>
+        fetchData={this.fetchData} resultData={(list) => {this.setState({list});}}
+        get_all={false} reload={false}
+        barcodeRecognized={(barcodes, is_scan)=> {
+          this.setState({is_scan});
+        } }
+      >
+        {list && list.length>0 &&
         <FlatList
-          initialNumToRender={this.state.list.length}
+          initialNumToRender={list.length}
           keyExtractor={(item, index) => index.toString()}
-          data={this.state.list}
+          data={list}
           renderItem={({ item, index }) => (
             <ListItem
               title={item.product_name}
@@ -691,12 +538,23 @@ class SearchBarATC extends React.Component {
             />
           )}
         />
-        </View>
-      )
-      }
+        }
+
+        {search==='' && !is_scan && !hideResult &&
+        (
+          <View style={{paddingTop: 5,}}>
+            <Text style={{textAlign:'center',color:'#fff'}}>Chưa có kết quả.</Text>
+          </View>
+        )}
+        {search!=='' && !is_scan && hideResult && item.product_name && (
+          <DetailCard item={item} store={store} showStore={this.showStore} user_location={user_location} />
+        )}
+
+      </SearchBarATC>
     </View>
     );
   }
 }
+
 
 export default SearchTab;
