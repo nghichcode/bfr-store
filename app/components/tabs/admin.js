@@ -60,7 +60,6 @@ class AdminTab extends React.Component {
   fetchData = (search, fetchSuccess) => {
     const {tokens,user,approve_status} = this.state;
     if(!this.isAdmin(tokens,user)) { return; }
-    this.setState({loading:true});
 
     const params = {
       limit: 100,
@@ -84,17 +83,14 @@ class AdminTab extends React.Component {
     })
     .then((json) => {
       if(json.error) {
-        this.setState({loading:false});
         Alert.alert("Lỗi", json.message+' : '+json.code,[{text: "OK"}],{ cancelable: false });
       } else {
         // console.log('admin.js:64',json);
       	const list = fetchSuccess(json.data);
     		self.setState({list});
-        this.setState({loading:false});
       }
     })
     .catch((error) => {
-      this.setState({loading:false});
       Alert.alert("Lỗi", error.message,[{text: "OK", onPress: () => null}],{ cancelable: false });
     });
   }

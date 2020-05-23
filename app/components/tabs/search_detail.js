@@ -8,16 +8,32 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import config from '../../config.js';
 import {crd2m} from '../../utils.js';
 import {styles} from '../styles/round_theme.js';
+import {getUser} from "../../models/model_utils";
 
 class DetailCard extends React.Component {
   render() {
-    const {store, showStore, user_location} = this.props;
+    const {
+      backPress,children,
+      store, showStore, user_location
+    } = this.props;
     const item = Object.assign({},this.props.item);
     for(let k in item) { if(item[k]=='null') delete item[k];}
-    const hasContact = item.city && item.street_address_one && item.street_address_two
-     && item.street_address_three && item.email && item.phone;
+    const hasContact = item.city || item.street_address_one || item.street_address_two
+     || item.street_address_three || item.email || item.phone;
     return (
-      <ScrollView style={{position:'absolute',top:60,left:0,right:0,bottom:0}}>
+    <View style={{height:'100%'}}>
+      <View style={styles.header_container}>
+        <View style={styles.header_bar}>
+          <TouchableOpacity onPress={ ()=>backPress() }>
+            <Text style={[styles.white,styles.w40]}>
+              <Ionicons name='md-arrow-back' size={30} color='#fff'/>
+            </Text>
+          </TouchableOpacity>
+          <Text style={[styles.white,styles.header_title]}>Thông tin chi tiết</Text>
+          <Text></Text>
+        </View>
+      </View>
+      <ScrollView>
         <Card
           title={item.product_name}
           image={{uri: config.getImage(item.img_url)}}
@@ -36,6 +52,56 @@ class DetailCard extends React.Component {
           containerStyle={{marginBottom:8}}
         >
           <View style={{marginHorizontal:8}}>
+
+            {item.store_id &&
+            <View>
+              <View style={{marginBottom:10}}>
+                <Text style={styles.text20c}>Thông tin cửa hàng</Text>
+              </View>
+              <View style={styles.cards_list}>
+                <View style={styles.card_row}>
+                  <TouchableOpacity style={styles.card} activeOpacity={0.68}
+                    onPress={()=>{showStore(item);}}
+                  >
+                    <View style={{flexDirection: 'row',justifyContent:'center',alignItems: 'center'}}>
+                      {(!(store && store.storename)) &&
+                      <Icon name='info-circle' size={20} color='#ffffff'
+                        style={{position:'absolute',top:0,right:0}}
+                      />
+                      }
+                      <Icon name='home' size={20} color='#ffffff'/>
+                      <Text style={{color:'#ffffff',marginLeft:4}}>
+                        {item.storename}
+                      </Text>
+                    </View>
+                    <Text style={{textAlign:'center',color:'#ffffff'}}>Tên cửa hàng</Text>
+                  </TouchableOpacity>
+                </View>
+                <View style={{flex:1,flexDirection:'row',}}>
+                  <View style={styles.card_row}>
+                    <View style={styles.card}>
+                      <View style={{flexDirection: 'row',justifyContent:'center',alignItems: 'center'}}>
+                        <Icon name='table' size={20} color='#ffffff'/>
+                        <Text style={{color:'#ffffff',marginLeft:4}}>{item.quantity}</Text>
+                      </View>
+                      <Text style={{textAlign:'center',color:'#ffffff'}}>Số lượng</Text>
+                    </View>
+                  </View>
+                  <View style={styles.card_row}>
+                    <View style={styles.card}>
+                      <View style={{flexDirection: 'row',justifyContent:'center',alignItems: 'center'}}>
+                        <Ionicons name='ios-timer' size={20} color='#ffffff'/>
+                        <Text style={{color:'#ffffff',marginLeft:4}}>{
+                          item.exp?item.exp:''
+                        }</Text>
+                      </View>
+                      <Text style={{textAlign:'center',color:'#ffffff'}}>Ngày hết hạn</Text>
+                    </View>
+                  </View>
+                </View>
+              </View>
+            </View>
+            }
 
             <View style={{marginBottom:10}}>
               <Text style={styles.text20c}>Thông tin sản phẩm</Text>
@@ -101,56 +167,6 @@ class DetailCard extends React.Component {
               </View>
             </View>
 
-            {item.store_id &&
-            <View>
-              <View style={{marginBottom:10}}>
-                <Text style={styles.text20c}>Thông tin cửa hàng</Text>
-              </View>
-              <View style={styles.cards_list}>
-                <View style={styles.card_row}>
-                  <TouchableOpacity style={styles.card} activeOpacity={0.68}
-                    onPress={()=>{showStore(item);}}
-                  >
-                    <View style={{flexDirection: 'row',justifyContent:'center',alignItems: 'center'}}>
-                      {(!(store && store.storename)) &&
-                      <Icon name='info-circle' size={20} color='#ffffff'
-                        style={{position:'absolute',top:0,right:0}}
-                      />
-                      }
-                      <Icon name='home' size={20} color='#ffffff'/>
-                      <Text style={{color:'#ffffff',marginLeft:4}}>
-                        {item.storename}
-                      </Text>
-                    </View>
-                    <Text style={{textAlign:'center',color:'#ffffff'}}>Tên cửa hàng</Text>
-                  </TouchableOpacity>
-                </View>
-                <View style={{flex:1,flexDirection:'row',}}>
-                  <View style={styles.card_row}>
-                    <View style={styles.card}>
-                      <View style={{flexDirection: 'row',justifyContent:'center',alignItems: 'center'}}>
-                        <Icon name='table' size={20} color='#ffffff'/>
-                        <Text style={{color:'#ffffff',marginLeft:4}}>{item.quantity}</Text>
-                      </View>
-                      <Text style={{textAlign:'center',color:'#ffffff'}}>Số lượng</Text>
-                    </View>
-                  </View>
-                  <View style={styles.card_row}>
-                    <View style={styles.card}>
-                      <View style={{flexDirection: 'row',justifyContent:'center',alignItems: 'center'}}>
-                        <Ionicons name='ios-timer' size={20} color='#ffffff'/>
-                        <Text style={{color:'#ffffff',marginLeft:4}}>{
-                          item.exp?item.exp:''
-                        }</Text>
-                      </View>
-                      <Text style={{textAlign:'center',color:'#ffffff'}}>Ngày hết hạn</Text>
-                    </View>
-                  </View>
-                </View>
-              </View>
-            </View>
-            }
-
             {hasContact &&
             <View>
               <View style={{marginBottom:10}}>
@@ -192,6 +208,7 @@ class DetailCard extends React.Component {
           </View>
         </Card>
       </ScrollView>
+    </View>
     );
   }
 }

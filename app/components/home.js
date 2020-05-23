@@ -41,7 +41,7 @@ class Home extends React.Component {
       detail:{name:'Thông Tin', icon:'address-card'},
     };
     const getIconByName = function(name, dicon='') {
-      for(t in tabs){if(name===tabs[t].name) return tabs[t].icon;}
+      for(let t in tabs){if(name===tabs[t].name) return tabs[t].icon;}
       return dicon || 'home';
     }
     return {tabs, getIconByName};
@@ -62,33 +62,31 @@ class Home extends React.Component {
     const {tabs,getIconByName} = this.tabs_data();
     return (
   	<NavigationContainer>
-	    <Tab.Navigator
-	      initialRouteName={tabs.search.name}
-	      screenOptions={({route}) => ({
-	        tabBarIcon: ({focused, color, size}) => {
-	          let iconName=getIconByName(route.name);
-	          return <Icon name={iconName} size={size} color={color}/>;
-	        },
-	      })}
-	      tabBarOptions={{
-	        activeTintColor: 'tomato',inactiveTintColor: 'gray',
-	      }}
-	    >
+      <Tab.Navigator
+        initialRouteName={tabs.search.name}
+        screenOptions={({route}) => ({
+          tabBarIcon: ({focused, color, size}) => {
+            let iconName=getIconByName(route.name);
+            return <Icon name={iconName} size={size} color={color}/>;
+          },
+        })}
+        tabBarOptions={{activeTintColor: 'tomato',inactiveTintColor: 'gray',}}
+      >
         {this.state.role==ROLE['admin'] &&
-	      <Tab.Screen name={tabs.admin.name}>
+        <Tab.Screen name={tabs.admin.name}>
           {props => <AdminTab {...props} realm={realm} />}
         </Tab.Screen>
         }
         <Tab.Screen name={tabs.store.name}>
           {props => <StoreTab {...props} realm={realm} />}
         </Tab.Screen>
-	      <Tab.Screen name={tabs.search.name}>
-	       {props => <SearchTab {...props} realm={realm} />}
-	      </Tab.Screen>
-	      <Tab.Screen name={tabs.detail.name}>
-	        {props => <DetailTab {...props} realm={realm} logout={this.logout}/>}
-	      </Tab.Screen>
-	    </Tab.Navigator>
+        <Tab.Screen name={tabs.search.name}>
+         {props => <SearchTab {...props} realm={realm} />}
+        </Tab.Screen>
+        <Tab.Screen name={tabs.detail.name}>
+          {props => <DetailTab {...props} realm={realm} logout={this.logout}/>}
+        </Tab.Screen>
+      </Tab.Navigator>
     </NavigationContainer>
     );
   }

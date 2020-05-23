@@ -232,10 +232,12 @@ class DetailTab extends React.Component {
     const self = this;
     if(!old_password || !password || !password1) {
       Alert.alert("Lỗi", "Không được để trống",[{text: "OK"}],{ cancelable: false });
+      self.setState({loading:false});
       return;
     }
     if(password != password1) {
       Alert.alert("Lỗi", "Mật khẩu mới không khớp",[{text: "OK"}],{ cancelable: false });
+      self.setState({loading:false});
       return;
     }
 

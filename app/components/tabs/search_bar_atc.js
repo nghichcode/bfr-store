@@ -1,18 +1,17 @@
 import React from 'react';
 import {View,Text,TouchableOpacity} from 'react-native';
-import {Button,SearchBar} from 'react-native-elements';
+import {SearchBar} from 'react-native-elements';
 
 import { Camera } from 'expo-camera';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {normalize} from '../../utils.js';
-import { getUser } from '../../models/model_utils.js';
 
 class SearchBarATC extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      search: '',user_location:'',
+      search: '',
       count_text: 0,
       list: [],
       is_scan:false,
@@ -27,18 +26,9 @@ class SearchBarATC extends React.Component {
       const { status } = await Camera.requestPermissionsAsync();
       this.setState({ hasCameraPermission: status === 'granted' });
       if (this.props.get_all) { this.onChangeText(''); }
-      this.setLocation();
     }
   }
   componentWillUnmount(){this.mounted = false;}
-
-  setLocation = () => {
-    if(!this.props.realm){return;}
-    const {store} = getUser(this.props.realm);
-    if(store && store.location){
-      this.setState({user_location:store.location});
-    }
-  }
 
   onChangeText = (text, force_update=false) => {
     const {search,list,count_text} = this.state;//Include text
@@ -49,27 +39,29 @@ class SearchBarATC extends React.Component {
     if (get_all && (count==0)) {//All
       // console.log('search_bar_atc.js:40',count);
       this.setState({ search: text,count_text:count });
-      if(fetchData) {fetchData(text, this.fetchSuccess);}
+      if(fetchData) {fetchData(text.trim(), this.fetchSuccess);}
       return;
     }
-
-    if(!text) {//No change
+    if(count==0) {//Empty
       this.setState({ search: text,count_text:count });
-      resultData(list);
+      resultData([]);
       return;
     }
 
     if(count==count_text && search && text.includes(search)) {
+    // console.log('search_bar_atc.js:62',text,search);
       let normal_txt = normalize(text);
+      let tmp_list = list.filter((it) => {
+        return it.product_name.includes(text)
+        ||it.gtin_code.includes(text)
+        ||it.product_name_alpha.includes(normal_txt);
+      });
       this.setState({
         search: text,
-        list: list.filter((it) => {
-          return it.product_name.includes(text)
-          ||it.gtin_code.includes(text)
-          ||it.product_name_alpha.includes(normal_txt);
-        }),
+        list: tmp_list,
       });
-      resultData(list);
+      // console.log('search_bar_atc.js:74',list);
+      resultData(tmp_list);
       return;
     }
 
@@ -144,7 +136,7 @@ class SearchBarATC extends React.Component {
             }}
             inputContainerStyle={{backgroundColor: '#eee',height:'100%'}}
             onChangeText={this.onChangeText}
-            value={search}
+            value={ search }
           />
         </View>
         <View style={{

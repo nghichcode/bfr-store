@@ -1,19 +1,17 @@
 import React from 'react';
 import {View,FlatList,Alert,StatusBar,ScrollView,TouchableOpacity} from 'react-native';
-import {Badge,Image,CheckBox,Overlay,Input,Text,SearchBar,ListItem} from 'react-native-elements';
-import { Camera } from 'expo-camera';
+import {Badge,Image,CheckBox,Overlay,Input,Text,ListItem} from 'react-native-elements';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as ImagePicker from 'expo-image-picker';
 import Constants from 'expo-constants';
 import * as Permissions from 'expo-permissions';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 
 import config from '../../config.js';
-import {parseForm,parseDate,crd2m,normalize} from '../../utils.js';
+import {parseForm,parseDate,crd2m} from '../../utils.js';
 import { getUser,ROLE } from '../../models/model_utils.js';
 import {styles} from '../styles/round_theme.js';
-import DetailCard from './detail_card.js';
+import DetailCard from './search_detail.js';
 import SearchBarATC from './search_bar_atc.js';
 
 
@@ -22,19 +20,16 @@ class SearchTab extends React.Component {
     super(props);
     this.state = {
       search: '',list:[],
-      hideResult:false, show_timepicker:false,
+      show_detail:false, show_timepicker:false,
       user_location:'',
-      is_add: false,
-      add_processing:false,
+      is_add: false, add_processing:false,
       add_data: {
         gtin_code:'',price:null,product_name:'',description:'',
         party_name:'',city:'',street_address_one:'',street_address_two:'',street_address_three:'',
         email:'',phone:''
       },
       image:null,
-      store_product: {
-        price:null,quantity:null,exp:''
-      },
+      store_product: {price:null,quantity:null,exp:''},
       other_data:false,
       is_scan:false,
       user:null, store:null, tokens:null,
@@ -45,7 +40,11 @@ class SearchTab extends React.Component {
     this.getPermissionAsync();
     const {user,store,tokens} = getUser(this.props.realm);
     this.setState({user,store,tokens});
+    if(store && store.location){
+      this.setState({user_location:store.location});
+    }
   }
+
   UNSAFE_componentWillReceiveProps(nxtProps){
     const oparams = this.props.route.params;
     const nparams = nxtProps.route.params;
@@ -59,7 +58,7 @@ class SearchTab extends React.Component {
       if (nparams && nparams.product) {
         const {product} = nparams;
         product.exp = (product.exp && product.exp.length>10)?parseDate(product.exp.slice(0,10)):product.exp;
-        this.setState({item:product,hideResult:true,search:product.product_name});
+        this.setState({item:product,show_detail:true,search:product.product_name});
       }
     }
   }
@@ -86,12 +85,12 @@ class SearchTab extends React.Component {
     } catch (e) {Alert.alert('Lỗi','Vui lòng cấp quyền mở file!\n'+e);;}
   };
 
-  handleResult = (item,user_location='') => {
+  handleResult = (item) => {
     if (!item) {
-      this.setState({hideResult:false,item:{}});
+      this.setState({show_detail:false,item:{}});
     } else {
       item.exp = (item.exp && item.exp.length>10)?parseDate(item.exp.slice(0,10)):item.exp;
-      this.setState({hideResult:true,item:item,user_location});
+      this.setState({show_detail:true,item:item});
     }
   }
   fetchData = (search, fetchSuccess) => {
@@ -117,7 +116,8 @@ class SearchTab extends React.Component {
         var data = [];
         data = data.concat(json.store_products?json.store_products.data:[]);
         data = data.concat(json.products?json.products.data:[]);
-        self.setState({list:data});
+        const list = fetchSuccess(data);
+        self.setState({list});
       }
     })
     .catch((error) => {
@@ -258,11 +258,21 @@ class SearchTab extends React.Component {
 
   render() {
     let {
-      search,list,hideResult,item,user,
+      search,list,show_detail,item,user,
       is_scan,user_location,store,show_timepicker,
       is_add,other_data,add_data,store_product,tokens,image,add_processing
     } = this.state;
     const {realm} = this.props;
+
+    if(!is_add && show_detail) {
+      return (
+        <DetailCard
+          backPress={ ()=>this.setState({item:{},is_add:false,show_detail:false}) }
+          item={item} store={store} showStore={this.showStore} user_location={user_location}
+        />
+      );
+    }
+
     return (
     <View style={{height:'100%'}}>
       <StatusBar backgroundColor="#ff9800" />
@@ -274,9 +284,7 @@ class SearchTab extends React.Component {
               || new Date(parseDate(store_product.exp, false))=='Invalid Date')
               ? new Date() : new Date(parseDate(store_product.exp, false))
           }
-          mode='date'
-          display="default"
-          is24Hour={true}
+          mode='date' display="default" is24Hour={true}
           onChange={
             (e,d)=>{
               this.setState({show_timepicker:false});
@@ -286,190 +294,194 @@ class SearchTab extends React.Component {
         />
       )}
 
-      <Overlay isVisible={is_add} fullScreen={true}>
-        <View style={{height:'100%'}}>
-        {add_processing &&
-          <View style={{
-            position:'absolute',top:0,left:0,backgroundColor:'#00000066',
-            width:'100%',height:'100%',flex:1,justifyContent:'center',zIndex:10
-          }}>
-            <Text style={{
-              textAlign:'center',backgroundColor:'#fff',borderRadius:10,
-              marginHorizontal:10,paddingVertical:20,fontWeight:'bold',
-            }}>Đang xử lý...</Text>
-          </View>
-        }
-        {!is_scan && (item && (item.store_product_id||item.id) ) ?
-          (<ScrollView>
-            <Text style={{textAlign:'center',fontWeight:"bold",fontSize:20,color:"#fb5b5a",marginBottom:20}}>
-              Thêm sản phẩm vào cửa hàng
-            </Text>
-            <Input
-              label="Barcode" disabled
-              
-              inputStyle={styles.textBold}
-              labelStyle={styles.orange} containerStyle={styles.mb5}
-              value={item.gtin_code}
+      <Overlay isVisible={is_add && !show_detail} fullScreen={true} overlayStyle={{padding:0}} animationType='fade'>
+        <ScrollView>
+          {is_add &&
+          <View>
+          {add_processing &&
+            <View style={{
+              position:'absolute',top:0,left:0,backgroundColor:'#00000066',
+              width:'100%',height:'100%',flex:1,justifyContent:'center',zIndex:10
+            }}>
+              <Text style={{
+                textAlign:'center',backgroundColor:'#fff',borderRadius:10,
+                marginHorizontal:10,paddingVertical:20,fontWeight:'bold',
+              }}>Đang xử lý...</Text>
+            </View>
+          }
+          {!is_scan && (item && (item.store_product_id||item.id) ) ?
+            (<View>
+              <Text style={{textAlign:'center',fontWeight:"bold",fontSize:20,color:"#fb5b5a",marginBottom:20}}>
+                Thêm sản phẩm vào cửa hàng
+              </Text>
+              <Input
+                label="Barcode" disabled
+
+                inputStyle={styles.textBold}
+                labelStyle={styles.orange} containerStyle={styles.mb5}
+                value={item.gtin_code}
+                />
+              <Input
+                label="Giá" placeholder="12000"
+                labelStyle={styles.orange} containerStyle={styles.mb5}
+                value={store_product.price}
+                onChangeText={text => this.setStoreProduct({price:text})}/>
+              <Input
+                label="Số lượng" placeholder="100"
+                labelStyle={styles.orange} containerStyle={styles.mb5}
+                value={store_product.quantity}
+                onChangeText={text => this.setStoreProduct({quantity:text})}/>
+              <Input
+                label="Hạn sử dụng" placeholder="dd/mm/yyyy"
+                labelStyle={styles.orange} containerStyle={styles.mb5}
+                value={store_product.exp}
+                leftIcon={
+                  <Icon name='calendar' size={40} color='tomato'
+                    onPress={()=>this.setState({show_timepicker:true})} />
+                }
+                onChangeText={text => this.setStoreProduct({exp:text})}/>
+
+              <View style={[styles.center]}>
+                <TouchableOpacity onPress={this.addProduct} style={[
+                  styles.roundBtn,styles.bgsuccess,styles.w100p,styles.mt40,
+                  ]}>
+                  <Text style={styles.white}>THÊM SẢN PHẨM</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => this.setState({ is_add: false })}
+                  style={[styles.roundBtn,styles.bgred,styles.w100p]}>
+                  <Text style={styles.white}>ĐÓNG</Text>
+                </TouchableOpacity>
+              </View>
+            </View>)
+            :(<View>
+              <Text style={{textAlign:'center',fontWeight:"bold",fontSize:20,color:"#fb5b5a",marginBottom:20}}>
+                Thêm sản phẩm
+              </Text>
+              <Input
+                label="Barcode" placeholder="08087700764322" maxLength={14}
+                labelStyle={styles.orange} containerStyle={styles.mb5}
+                value={add_data.gtin_code}
+                rightIcon={
+                  <Icon name='qrcode' size={40} color='gray'
+                    onPress={()=>this.setState({is_scan:true})}
+                  />
+                }
+                onChangeText={text => this.setProduct({gtin_code:text})}/>
+              <Input
+                label="Giá" placeholder="12000"
+                labelStyle={styles.orange} containerStyle={styles.mb5}
+                value={add_data.price}
+                onChangeText={text => this.setProduct({price:text})}/>
+              <Input
+                label="Tên sản phẩm" placeholder="Mỳ tôm"
+                labelStyle={styles.orange} containerStyle={styles.mb5}
+                value={add_data.product_name}
+                onChangeText={text => this.setProduct({product_name:text})}/>
+              <Input
+                label="Ảnh" placeholder="..." disabled
+                labelStyle={styles.orange} containerStyle={styles.mb5}
+                value={(image &&image.type)?image.uri.split('/').pop():''}
+                leftIcon={
+                  <Icon name='image' size={40} color='tomato' onPress={this._pickImage}/>
+                }
+                rightIcon={
+                  <Icon name='remove' size={40} color='tomato'
+                    onPress={()=>this.setState({image:null})}
+                  />
+                }
+                onChangeText={text => this.setProduct({product_name:text})}/>
+              {image && image.uri &&
+              <Image source={{uri:image.uri}}
+                containerStyle={{height:300}}
+                PlaceholderContent={
+                  <View style={{
+                    height:'100%',width:'100%', backgroundColor:'#bf9f94',
+                    justifyContent:'center',alignItems:'center'
+                  }}>
+                    <Text style={{textAlign:'center'}}>Không có ảnh</Text>
+                  </View>
+                }
               />
-            <Input
-              label="Giá" placeholder="12000"
-              labelStyle={styles.orange} containerStyle={styles.mb5}
-              value={store_product.price}
-              onChangeText={text => this.setStoreProduct({price:text})}/>
-            <Input
-              label="Số lượng" placeholder="100"
-              labelStyle={styles.orange} containerStyle={styles.mb5}
-              value={store_product.quantity}
-              onChangeText={text => this.setStoreProduct({quantity:text})}/>
-            <Input
-              label="Hạn sử dụng" placeholder="dd/mm/yyyy"
-              labelStyle={styles.orange} containerStyle={styles.mb5}
-              value={store_product.exp}
-              leftIcon={
-                <Icon name='calendar' size={40} color='tomato'
-                  onPress={()=>this.setState({show_timepicker:true})} />
               }
-              onChangeText={text => this.setStoreProduct({exp:text})}/>
+              <Input
+                label="Mô tả" placeholder="..."
+                labelStyle={styles.orange} containerStyle={styles.mb5}
+                value={add_data.description}
+                onChangeText={text => this.setProduct({description:text})}/>
 
-            <View style={[styles.center]}>
-              <TouchableOpacity onPress={this.addProduct} style={[
-                styles.roundBtn,styles.bgsuccess,styles.w100p,styles.mt40,
-                ]}>
-                <Text style={styles.white}>THÊM SẢN PHẨM</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => this.setState({ is_add: false })}
-                style={[styles.roundBtn,styles.bgred,styles.w100p]}>
-                <Text style={styles.white}>ĐÓNG</Text>
-              </TouchableOpacity>
-            </View>
-          </ScrollView>)
-          :(<ScrollView>
-            <Text style={{textAlign:'center',fontWeight:"bold",fontSize:20,color:"#fb5b5a",marginBottom:20}}>
-              Thêm sản phẩm
-            </Text>
-            <Input
-              label="Barcode" placeholder="08087700764322" maxLength={14}
-              labelStyle={styles.orange} containerStyle={styles.mb5}
-              value={add_data.gtin_code}
-              rightIcon={
-                <Icon name='qrcode' size={40} color='gray'
-                  onPress={()=>this.setState({is_scan:true})}
-                />
-              }
-              onChangeText={text => this.setProduct({gtin_code:text})}/>
-            <Input
-              label="Giá" placeholder="12000"
-              labelStyle={styles.orange} containerStyle={styles.mb5}
-              value={add_data.price}
-              onChangeText={text => this.setProduct({price:text})}/>
-            <Input
-              label="Tên sản phẩm" placeholder="Mỳ tôm"
-              labelStyle={styles.orange} containerStyle={styles.mb5}
-              value={add_data.product_name}
-              onChangeText={text => this.setProduct({product_name:text})}/>
-            <Input
-              label="Ảnh" placeholder="..." disabled
-              labelStyle={styles.orange} containerStyle={styles.mb5}
-              value={(image &&image.type)?image.uri.split('/').pop():''}
-              leftIcon={
-                <Icon name='image' size={40} color='tomato' onPress={this._pickImage}/>
-              }
-              rightIcon={
-                <Icon name='remove' size={40} color='tomato'
-                  onPress={()=>this.setState({image:null})}
-                />
-              }
-              onChangeText={text => this.setProduct({product_name:text})}/>
-            {image && image.uri &&
-            <Image source={{uri:image.uri}}
-              containerStyle={{height:300}}
-              PlaceholderContent={
-                <View style={{
-                  height:'100%',width:'100%', backgroundColor:'#bf9f94',
-                  justifyContent:'center',alignItems:'center'
-                }}>
-                  <Text style={{textAlign:'center'}}>Không có ảnh</Text>
-                </View>
-              }
-            />
-            }
-            <Input
-              label="Mô tả" placeholder="..."
-              labelStyle={styles.orange} containerStyle={styles.mb5}
-              value={add_data.description}
-              onChangeText={text => this.setProduct({description:text})}/>
+              <CheckBox
+                title='Thông tin liên hệ'
+                center iconRight checked={other_data}
+                containerStyle={{backgroundColor:'#fff'}}
+                onPress={() => this.setState({other_data:!other_data}) }
+              />
+              {other_data &&
+              <View>
+                <Input
+                  label="Email" placeholder="contact@nc.com"
+                  labelStyle={styles.orange} containerStyle={styles.mb5}
+                  value={add_data.email}
+                  onChangeText={text => this.setProduct({email:text})}/>
+                <Input
+                  label="Số điện thoại" placeholder="..."
+                  labelStyle={styles.orange} containerStyle={styles.mb5}
+                  value={add_data.phone}
+                  onChangeText={text => this.setProduct({phone:text})}/>
+                <Input
+                  label="Tên công ty" placeholder="..."
+                  labelStyle={styles.orange} containerStyle={styles.mb5}
+                  value={add_data.party_name}
+                  onChangeText={text => this.setProduct({party_name:text})}/>
+                <Input
+                  label="Thành phố" placeholder="..."
+                  labelStyle={styles.orange} containerStyle={styles.mb5}
+                  value={add_data.city}
+                  onChangeText={text => this.setProduct({city:text})}/>
+                <Input
+                  label="Địa chỉ sản xuất 1" placeholder="..."
+                  labelStyle={styles.orange} containerStyle={styles.mb5}
+                  value={add_data.street_address_one}
+                  onChangeText={text => this.setProduct({street_address_one:text})}/>
+                <Input
+                  label="Địa chỉ sản xuất 2" placeholder="..."
+                  labelStyle={styles.orange} containerStyle={styles.mb5}
+                  value={add_data.street_address_two}
+                  onChangeText={text => this.setProduct({street_address_two:text})}/>
+                <Input
+                  label="Địa chỉ sản xuất 3" placeholder="..."
+                  labelStyle={styles.orange} containerStyle={styles.mb5}
+                  value={add_data.street_address_three}
+                  onChangeText={text => this.setProduct({street_address_three:text})}/>
 
-            <CheckBox
-              title='Thông tin liên hệ'
-              center iconRight checked={other_data}
-              containerStyle={{backgroundColor:'#fff'}}
-              onPress={() => this.setState({other_data:!other_data}) }
-            />
-            {other_data &&
-            <View>
-              <Input
-                label="Email" placeholder="contact@nc.com"
-                labelStyle={styles.orange} containerStyle={styles.mb5}
-                value={add_data.email}
-                onChangeText={text => this.setProduct({email:text})}/>
-              <Input
-                label="Số điện thoại" placeholder="..."
-                labelStyle={styles.orange} containerStyle={styles.mb5}
-                value={add_data.phone}
-                onChangeText={text => this.setProduct({phone:text})}/>
-              <Input
-                label="Tên công ty" placeholder="..."
-                labelStyle={styles.orange} containerStyle={styles.mb5}
-                value={add_data.party_name}
-                onChangeText={text => this.setProduct({party_name:text})}/>
-              <Input
-                label="Thành phố" placeholder="..."
-                labelStyle={styles.orange} containerStyle={styles.mb5}
-                value={add_data.city}
-                onChangeText={text => this.setProduct({city:text})}/>
-              <Input
-                label="Địa chỉ sản xuất 1" placeholder="..."
-                labelStyle={styles.orange} containerStyle={styles.mb5}
-                value={add_data.street_address_one}
-                onChangeText={text => this.setProduct({street_address_one:text})}/>
-              <Input
-                label="Địa chỉ sản xuất 2" placeholder="..."
-                labelStyle={styles.orange} containerStyle={styles.mb5}
-                value={add_data.street_address_two}
-                onChangeText={text => this.setProduct({street_address_two:text})}/>
-              <Input
-                label="Địa chỉ sản xuất 3" placeholder="..."
-                labelStyle={styles.orange} containerStyle={styles.mb5}
-                value={add_data.street_address_three}
-                onChangeText={text => this.setProduct({street_address_three:text})}/>
-              
-            </View>
-            }
+              </View>
+              }
 
-            <View style={styles.center}>
-              <TouchableOpacity onPress={this.addProduct} style={[
-                styles.roundBtn,styles.bgsuccess,styles.w100p,styles.mt40
-                ]}>
-                <Text style={styles.white}>THÊM SẢN PHẨM</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => this.setState({ is_add: false })}
-                style={[styles.roundBtn,styles.bgred,styles.w100p]}>
-                <Text style={styles.white}>ĐÓNG</Text>
-              </TouchableOpacity>
-            </View>
-          </ScrollView>)
-        }
-        {is_scan &&
-        <SearchBarATC realm={realm}
-          onChangeText={null} show_scan={true}
-          get_all={false} reload={false}
-          barcodeRecognized={(barcodes, is_scan)=> {
-            this.setState({is_scan});
-            this.setProduct({gtin_code:barcodes.data});
-          } }
-        />
-        }
-        </View>
+              <View style={[styles.center,styles.mx2p]}>
+                <TouchableOpacity onPress={this.addProduct} style={[
+                  styles.roundBtn,styles.bgsuccess,styles.w100p,styles.mt40
+                  ]}>
+                  <Text style={styles.white}>THÊM SẢN PHẨM</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => this.setState({ is_add: false })}
+                  style={[styles.roundBtn,styles.bgred,styles.w100p]}>
+                  <Text style={styles.white}>ĐÓNG</Text>
+                </TouchableOpacity>
+              </View>
+            </View>)
+          }
+          {is_scan &&
+          <SearchBarATC realm={realm}
+            onChangeText={null} show_scan={true}
+            get_all={false} reload={false}
+            barcodeRecognized={(barcodes, is_scan)=> {
+              this.setState({is_scan});
+              this.setProduct({gtin_code:barcodes.data});
+            } }
+          />
+          }
+          </View>
+          }
+        </ScrollView>
       </Overlay>
 
       {!is_scan &&
@@ -492,17 +504,23 @@ class SearchTab extends React.Component {
       }
 
       <SearchBarATC realm={realm}
-        fetchData={this.fetchData} resultData={(list) => {this.setState({list});}}
-        get_all={false} reload={false}
+        fetchData={this.fetchData} resultData={(list) => {this.setState({list}); }}
+        get_all={false} reload={false} onChangeText={(search) => {
+          this.setState({search});this.handleResult(null);
+        }}
         barcodeRecognized={(barcodes, is_scan)=> {
           this.setState({is_scan});
         } }
       >
+        {search==='' && !is_scan && !(list && list.length>0) &&
+        (
+          <View style={{paddingTop: 5,}}>
+            <Text style={{textAlign:'center',color:'#fff'}}>Chưa có kết quả.</Text>
+          </View>
+        )}
         {list && list.length>0 &&
         <FlatList
-          initialNumToRender={list.length}
-          keyExtractor={(item, index) => index.toString()}
-          data={list}
+          keyExtractor={(item, index) => index.toString()} data={list}
           renderItem={({ item, index }) => (
             <ListItem
               title={item.product_name}
@@ -532,24 +550,12 @@ class SearchTab extends React.Component {
                 } status="error" />
               </View>}
               leftAvatar={{ source: { uri: config.getImage(item.img_url) } }}
-              bottomDivider
-              chevron
+              bottomDivider chevron
               onPress={() => {this.handleResult(item);}}
             />
           )}
         />
         }
-
-        {search==='' && !is_scan && !hideResult &&
-        (
-          <View style={{paddingTop: 5,}}>
-            <Text style={{textAlign:'center',color:'#fff'}}>Chưa có kết quả.</Text>
-          </View>
-        )}
-        {search!=='' && !is_scan && hideResult && item.product_name && (
-          <DetailCard item={item} store={store} showStore={this.showStore} user_location={user_location} />
-        )}
-
       </SearchBarATC>
     </View>
     );

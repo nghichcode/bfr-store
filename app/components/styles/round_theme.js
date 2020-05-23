@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
   // ADD
   mb20:{marginBottom:20,},
   mb5:{marginBottom:5,},
-  mx:{marginHorizontal:'2%'},
+  mx2p:{marginHorizontal:'2%'},
   mt40:{marginTop:40,},
   w80p:{width:"80%",},
   w100p:{width:"100%",},
@@ -78,6 +78,14 @@ const styles = StyleSheet.create({
 
   center:{alignItems:'center',textAlign:'center'},
   rowcenter:{flexDirection: 'row',justifyContent:'center',alignItems: 'center'},
+
+  header_container:{flex:0,flexDirection:'row',alignItems:'center'},
+  header_bar:{
+    height:60,width:'100%',backgroundColor:'#3f51b5',paddingHorizontal:8,
+    flexDirection: 'row',justifyContent:'space-between',alignItems: 'center'
+  },
+  header_title:{fontSize:20,lineHeight:20},
+  w40:{width:40},
 });
 
 export {
