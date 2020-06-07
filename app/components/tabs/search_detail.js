@@ -1,6 +1,6 @@
 import React from 'react';
-import {View,Text,ScrollView,TouchableOpacity} from 'react-native';
-import {Card} from 'react-native-elements';
+import {View, Text, ScrollView, TouchableOpacity, FlatList, Alert, Dimensions} from 'react-native';
+import {Image, Card} from 'react-native-elements';
 
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -8,15 +8,62 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import config from '../../config.js';
 import {crd2m} from '../../utils.js';
 import {styles} from '../styles/round_theme.js';
-import {getUser} from "../../models/model_utils";
+import {parseDate, parseForm} from "../../utils";
+
+const imgWidth = Math.floor(Dimensions.get('window').width/2 - 33);
+const imgHeight = Math.floor(imgWidth*4/3);
 
 class DetailCard extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {store_list:[],};
+  }
+  componentDidMount() {
+  	const self = this;
+    const item = Object.assign({},self.props.item);
+  	if(!item.store_id){return;}
+
+    const params = {
+      limit: 20,offset : 0,store_search:1,store_id:item.store_id,search : '',
+    };
+
+    fetch(config.getLocation('search/search_store_product/'), {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        'Accept': "application/json",
+      },
+      method: 'POST',
+      body: parseForm(params),
+    })
+    .then((response) => {
+      return response.json();
+    })
+    .then((json) => {
+      if(json.error) {
+        Alert.alert("Lỗi", json.message+' : '+json.code,[{text: "OK"}],{ cancelable: false });
+      } else {
+        self.setState({store_list:json.store_products.data});
+      }
+    })
+    .catch((error) => {
+      Alert.alert("Lỗi", error.message,[{text: "OK", onPress: () => null}],{ cancelable: false });
+    });
+  }
+
+  handleSelectItem = (item)=>{
+    this.refs.detail_scroll.scrollTo({x: 0, y: 0, animated: true});
+    this.props.handleSelectItem(item);
+    this.refs.detail_scroll.scrollTo({x: 0, y: 0, animated: true});
+  }
+
   render() {
+    const {handleSelectItem} = this;
+    const {store_list} = this.state;
     const {
-      backPress,children,
+      backPress,item,
       store, showStore, user_location
     } = this.props;
-    const item = Object.assign({},this.props.item);
+    let suggest_list = this.props.suggest_list.filter((it)=> JSON.stringify(it)!==JSON.stringify(item) );
     for(let k in item) { if(item[k]=='null') delete item[k];}
     const hasContact = item.city || item.street_address_one || item.street_address_two
      || item.street_address_three || item.email || item.phone;
@@ -33,7 +80,7 @@ class DetailCard extends React.Component {
           <Text></Text>
         </View>
       </View>
-      <ScrollView>
+      <ScrollView ref='detail_scroll'>
         <Card
           title={item.product_name}
           image={{uri: config.getImage(item.img_url)}}
@@ -92,7 +139,7 @@ class DetailCard extends React.Component {
                       <View style={{flexDirection: 'row',justifyContent:'center',alignItems: 'center'}}>
                         <Ionicons name='ios-timer' size={20} color='#ffffff'/>
                         <Text style={{color:'#ffffff',marginLeft:4}}>{
-                          item.exp?item.exp:''
+                          (item.exp && item.exp.length>10)?parseDate(item.exp.slice(0,10)):product.exp
                         }</Text>
                       </View>
                       <Text style={{textAlign:'center',color:'#ffffff'}}>Ngày hết hạn</Text>
@@ -205,9 +252,81 @@ class DetailCard extends React.Component {
             </View>
             }
 
+            {suggest_list.length > 0 &&
+            <View style={{marginBottom: 10}}>
+              <Text style={styles.text20c}>Sản phẩm liên quan</Text>
+              <View style={{marginVertical:10}}>
+                <FlatList
+                  ItemSeparatorComponent={()=><View style={{width:8,backgroundColor:'#fff'}}/>}
+                  keyExtractor={(item, index) => index.toString()} horizontal={true}
+                  data={suggest_list}
+                  renderItem={({item, index}) => (
+                    <TouchableOpacity onPress={()=>handleSelectItem(item)} >
+                    <View style={{ width: imgWidth-8, marginBottom:10}}>
+                      <Image source={{ uri: config.getImage(item.img_url) }} style={{ width: imgWidth-8, height: imgHeight }} />
+                      <View style={{flexDirection: 'row',justifyContent:'space-between',marginTop:10}}>
+                        <Text style={[styles.white, styles.bgred, styles.badge_txt]}>
+                          {(
+                            !user_location
+                              ? ((item.store_id) ? 'Không rõ' : 'SP gốc') : item.location
+                              ? crd2m(user_location, item.location) + 'm' : item.store_id ? 'Không rõ' : 'SP gốc'
+                          )}
+                        </Text>
+                        <Text style={{marginEnd:4}}>
+                          {item.is_approved > 0 && <Icon name='check' size={10} color='tomato'/>}
+                          {item.is_trusted > 0 && <Icon name='star' size={10} color='tomato'/>}
+                        </Text>
+                      </View>
+                      <Text>{item.product_name}</Text>
+                      <Text style={{color: '#9e9e9e'}}>{item.gtin_code}</Text>
+                      <Text style={{color: '#9e9e9e'}}>Giá: {item.price}</Text>
+                    </View>
+                    </TouchableOpacity>
+                  )}
+                />
+              </View>
+            </View>
+            }
+
+            {store_list.length > 0 &&
+            <View style={{marginBottom: 10}}>
+              <Text style={styles.text20c}>Sản phẩm khác của cửa hàng</Text>
+              <View>
+                <FlatList
+                  keyExtractor={(item, index) => index.toString()} horizontal={true}
+                  data={store_list}
+                  renderItem={({item, index}) => (
+                    <TouchableOpacity onPress={()=>handleSelectItem(item)} >
+                    <View style={{ width: imgWidth-8, marginBottom:10}}>
+                      <Image source={{ uri: config.getImage(item.img_url) }} style={{ width: imgWidth-8, height: imgHeight }} />
+                      <View style={{flexDirection: 'row',justifyContent:'space-between',marginTop:10}}>
+                        <Text style={[styles.white, styles.bgred, styles.badge_txt]}>
+                          {(
+                            !user_location
+                              ? ((item.store_id) ? 'Không rõ' : 'SP gốc') : item.location
+                              ? crd2m(user_location, item.location) + 'm' : item.store_id ? 'Không rõ' : 'SP gốc'
+                          )}
+                        </Text>
+                        <Text style={{marginEnd:4}}>
+                          {item.is_approved > 0 && <Icon name='check' size={10} color='tomato'/>}
+                          {item.is_trusted > 0 && <Icon name='star' size={10} color='tomato'/>}
+                        </Text>
+                      </View>
+                      <Text>{item.product_name}</Text>
+                      <Text style={{color: '#9e9e9e'}}>{item.gtin_code}</Text>
+                      <Text style={{color: '#9e9e9e'}}>Giá: {item.price}</Text>
+                    </View>
+                    </TouchableOpacity>
+                  )}
+                />
+              </View>
+            </View>
+            }
+
           </View>
         </Card>
       </ScrollView>
+      {this.props.children}
     </View>
     );
   }

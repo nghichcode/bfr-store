@@ -52,9 +52,7 @@ class DetailTab extends React.Component {
       // this.enableGPS();
     }
   }
-  componentWillUnmount(){
-    this.mounted = false;
-  }
+  componentWillUnmount(){this.mounted = false;}
 
   initUser = (realm) => {
     const user_data = getUser(realm);

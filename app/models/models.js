@@ -8,6 +8,13 @@ const ROLE_NAME = {
   2:'user',
   3:'guest',
 };
+const APPROVE_STATUS = {
+  'ignored':-1,
+  'pending':0,
+  'approved':1,
+  'valid':8,
+  'all':9
+};
 
 const mapobj = function (obj){
   for(let i in obj){
@@ -122,5 +129,6 @@ export {
 	TokenSchema,UserSchema,StoreSchema,
   TokenObj,UserObj,StoreObj,
   UserLabel,StoreLabel,
-  ROLE_NAME,ROLE,ObjectMap
+  ROLE_NAME,ROLE,ObjectMap,
+  APPROVE_STATUS
 };

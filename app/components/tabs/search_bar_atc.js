@@ -6,18 +6,24 @@ import { Camera } from 'expo-camera';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {normalize} from '../../utils.js';
+import {debounce} from '../../underscore_nano.js';
 
 class SearchBarATC extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      search: '',
+      search: '',proccessing:false,
       count_text: 0,
       list: [],
       is_scan:false,
       hasCameraPermission:null,
       flash:false,
     };
+    const self = this;
+    const {fetchData} = props;
+    this._debounce = debounce((text)=>{
+      if(fetchData) {fetchData(text.trim(), self.fetchSuccess);}
+    }, 1600);
   }
 
   async componentDidMount() {
@@ -31,48 +37,44 @@ class SearchBarATC extends React.Component {
   componentWillUnmount(){this.mounted = false;}
 
   onChangeText = (text, force_update=false) => {
+    const self = this;
     const {search,list,count_text} = this.state;//Include text
     const {onChangeText,fetchData,resultData,get_all} = this.props;
     if(onChangeText) {onChangeText(text);}
 
     const count = text.split(' ').filter((it)=>it).length;
-    if (get_all && (count==0)) {//All
-      // console.log('search_bar_atc.js:40',count);
-      this.setState({ search: text,count_text:count });
-      if(fetchData) {fetchData(text.trim(), this.fetchSuccess);}
-      return;
-    }
+    this.setState({ search:text,count_text:count,proccessing:true });
     if(count==0) {//Empty
-      this.setState({ search: text,count_text:count });
-      resultData([]);
+      if (get_all) {//All
+        // console.log('search_bar_atc.js:44',count);
+        if(fetchData) {fetchData(text.trim(), this.fetchSuccess);}
+      } else {resultData([]);this.setState({ proccessing:false });}
       return;
     }
 
-    if(count==count_text && search && text.includes(search)) {
-    // console.log('search_bar_atc.js:62',text,search);
-      let normal_txt = normalize(text);
-      let tmp_list = list.filter((it) => {
-        return it.product_name.includes(text)
-        ||it.gtin_code.includes(text)
-        ||it.product_name_alpha.includes(normal_txt);
-      });
-      this.setState({
-        search: text,
-        list: tmp_list,
-      });
-      // console.log('search_bar_atc.js:74',list);
-      resultData(tmp_list);
-      return;
-    }
+    // if(count==count_text && search && text.includes(search)) {
+    //   let normal_txt = normalize(text);
+    //   let tmp_list = list.filter((it) => {
+    //     return it.product_name.includes(text)
+    //     ||it.gtin_code.includes(text)
+    //     ||it.product_name_alpha.includes(normal_txt);
+    //   });
+    //   this.setState({search: text,list: tmp_list});
+    //   resultData(tmp_list);
+    //   return;
+    // }
 
-    this.setState({search: text});
-    if ( count!=count_text ) {//Has Change
-      this.setState({count_text:count});
-      if(fetchData) {fetchData(text.trim(), this.fetchSuccess);}
-    }
+    // this.setState({search: text});
+    // console.log('search_bar_atc.js:63',text);
+    this._debounce(text);
+    // if ( count!=count_text ) {//Has Change
+    //   this.setState({count_text:count});
+    //   if(fetchData) {fetchData(text.trim(), this.fetchSuccess);}
+    // }
   }
   fetchSuccess = (list) => {
-    this.setState({list});
+    if(!list){this.setState({proccessing:false});}
+    else {this.setState({list,proccessing:false});}
     return list;
   }
 
@@ -85,8 +87,9 @@ class SearchBarATC extends React.Component {
   }
 
   render() {
-    const {search,is_scan,flash,hasCameraPermission} = this.state;
+    const {is_scan,flash,hasCameraPermission,proccessing} = this.state;
     const {show_scan,children,reload} = this.props;
+    const search = this.state.search || this.props.search;
 
     if (is_scan || show_scan) {
       return(
@@ -129,7 +132,7 @@ class SearchBarATC extends React.Component {
         <View style={{width: '90%'}}>
           <SearchBar
             lightTheme={true}
-            placeholder="Type Here..."
+            placeholder="Vui lòng nhập..."
             containerStyle={{
               backgroundColor: '#fff',borderTopWidth: 1,borderBottomWidth: 1,
               borderBottomColor: '#ddd',borderTopColor: '#ddd',
@@ -153,7 +156,10 @@ class SearchBarATC extends React.Component {
         </View>
       </View>
       <View style={{position:'absolute',top:60,left:0,right:0,bottom:0}}>
-      {children}
+      {proccessing?
+        <Text style={{textAlign:'center',color:'#ffffff'}}>Đang tìm kiếm...</Text>
+        :children
+      }
       {reload &&
       <View style={{
         position:'absolute',right:16,bottom:16,alignItems:'center',justifyContent:'center',zIndex:9

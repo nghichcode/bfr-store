@@ -1,6 +1,6 @@
 import React from 'react';
 import {ScrollView,Alert,View,FlatList,TouchableOpacity} from 'react-native';
-import {Image,CheckBox,Text,ListItem,Overlay,Input,Tooltip} from 'react-native-elements';
+import {Image,CheckBox,Text,ListItem,Overlay,Input} from 'react-native-elements';
 import * as ImagePicker from 'expo-image-picker';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
@@ -9,7 +9,7 @@ import config from '../../config.js';
 import {parseForm} from '../../utils.js';
 import SearchBarATC from './search_bar_atc.js';
 import {getUser} from '../../models/model_utils.js';
-import {ROLE} from '../../models/models.js';
+import {ROLE,APPROVE_STATUS} from '../../models/models.js';
 
 class RoundButton extends React.Component {
   render() {
@@ -36,7 +36,7 @@ class AdminTab extends React.Component {
     this.state = {
       loading: false,is_scan:false,
       edit_item:{},image:null,
-      list: [],approve_item:{},approve_status:0,
+      list: [],approve_item:{},approve_status:APPROVE_STATUS.pending,
       user:{},tokens:{},permission_token:''
     };
   }
@@ -62,9 +62,9 @@ class AdminTab extends React.Component {
     if(!this.isAdmin(tokens,user)) { return; }
 
     const params = {
-      limit: 100,
+      limit: 20,
       offset : 0,
-      approve_status:approve_status?8:0,show_action:false,
+      approve_status:approve_status?APPROVE_STATUS.valid:APPROVE_STATUS.pending,show_action:false,
       search : search,
     };
 
@@ -133,7 +133,7 @@ class AdminTab extends React.Component {
 
     const params = {
       id: approve_item.id,
-      approve:approve?1:-1,
+      approve:approve?APPROVE_STATUS.approved:APPROVE_STATUS.ignored,
     };
 
     const self = this;
@@ -256,12 +256,8 @@ class AdminTab extends React.Component {
               title={item.product_name}
               rightTitle={
                 <View style={{flexDirection:'row'}}>
-                  <Icon name={item.is_approved>0?'check':'remove'} size={20} color='tomato'/>
-                  <Tooltip backgroundColor='#8bc34a' popover={
-                    <Text style={{color:'#fff'}}>Sản phẩm {item.is_approved>0?'đã':'chưa'} được duyệt</Text>
-                  }>
-                    <Icon name='question-circle' size={20} color='#4caf50'/>
-                  </Tooltip>
+                  <Icon name={item.is_approved==APPROVE_STATUS.approved?'check':'remove'} size={20} color='tomato'/>
+                  <Icon name='question-circle' size={20} color='#4caf50'/>
                   {item.is_trusted>0 && <Icon name='star' size={20} color='tomato'/>}
                 </View>
               }

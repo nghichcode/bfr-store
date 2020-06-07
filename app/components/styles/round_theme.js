@@ -1,4 +1,5 @@
-import {StyleSheet} from 'react-native';
+import {StyleSheet, TouchableOpacity} from 'react-native';
+import React from "react";
 
 const styles = StyleSheet.create({
   container: {
@@ -44,6 +45,8 @@ const styles = StyleSheet.create({
   mb20:{marginBottom:20,},
   mb5:{marginBottom:5,},
   mx2p:{marginHorizontal:'2%'},
+  mt4:{marginTop:4,},
+  mt2:{marginTop:2,},mb2:{marginBottom:2,},
   mt40:{marginTop:40,},
   w80p:{width:"80%",},
   w100p:{width:"100%",},
@@ -62,6 +65,23 @@ const styles = StyleSheet.create({
   roundBtn:{
     borderRadius:25,height:50,alignItems:"center",justifyContent:'center',marginBottom:10
   },
+  fstRoundBtn:{position:'absolute',right:16,bottom:16,alignItems:'center',justifyContent:'center',zIndex:9},
+  roundBlueBtn:{
+    alignItems:'center',justifyContent:'center',
+    width:60,height:60,borderRadius:30,
+    backgroundColor:'#3f51b5',
+    shadowColor: '#000000',shadowOffset:  { width: 10, height: 10 },
+    elevation: 6,shadowOpacity: 1,shadowRadius: 6,
+  },
+  roundCornerBtn:{
+    alignItems:'center',justifyContent:'center',
+    width:48,height:22,borderRadius:4
+  },
+  roundCornerPad:{width:48,height:22},
+  roundCornerInp:{
+    alignItems:'center',justifyContent:'center',borderWidth: 1,borderRadius:4,
+    width:48,height:32,paddingBottom:0
+  },
 
   orange:{color:'#ffa184'},
   white: {color:"#ffffff"},
@@ -71,6 +91,7 @@ const styles = StyleSheet.create({
   warning: {color:"#ff9800",},
   success: {color:"#4caf50",},
 
+  bgwhite: {backgroundColor:"#ffffff",},
   bgred: {backgroundColor:"#fb5b5a",},
   bginfo: {backgroundColor:"#3f51b5",},
   bgwarning: {backgroundColor:"#ff9800",},
@@ -86,6 +107,8 @@ const styles = StyleSheet.create({
   },
   header_title:{fontSize:20,lineHeight:20},
   w40:{width:40},
+  badge_txt:{borderRadius: 10,paddingHorizontal: 4},
+
 });
 
 export {

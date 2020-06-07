@@ -24,8 +24,13 @@ function parseDate(date, locale=true){
 
 
 function parseForm(params) {
-  var formData = new FormData();
-  for (var k in params) { formData.append(k, params[k]); }
+  let formData = new FormData();
+  for (let k in params) {
+  	if (Array.isArray(params[k])) {
+  		let list = params[k];
+  		for(let i=0;i<list.length;i++){formData.append(k+'[]', list[i]);}
+  	} else {formData.append(k, params[k]);}
+  }
   return formData;
 }
 

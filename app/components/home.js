@@ -10,6 +10,7 @@ import {getUser} from '../models/model_utils.js';
 import SearchTab from './tabs/search.js';
 import StoreTab from './tabs/store.js';
 import DetailTab from './tabs/detail.js';
+import CalculateTab from './tabs/calculate.js';
 import AdminTab from './tabs/admin.js';
 
 const Tab = createBottomTabNavigator();
@@ -24,6 +25,8 @@ class Home extends React.Component {
 
 
   async componentDidMount() {
+    this.mounted = true;
+    if(!this.mounted) {return;}
     const user_data = getUser(this.props.realm);
     var {role} = this.state;
     if(user_data && user_data.user && user_data.user.permission_id) {
@@ -31,13 +34,14 @@ class Home extends React.Component {
     }
     this.setState({role});
   }
+  componentWillUnmount(){this.mounted = false;}
 
   tabs_data = function(){
     const tabs={
       admin:{name:'Admin', icon:'user'},
       store:{name:'Cửa Hàng', icon:'home'},
       search:{name:'Tìm Kiếm', icon:'search'},
-      calc:{name:'Tính Toán', icon:'calculator'},
+      calculate:{name:'Tính Toán', icon:'calculator'},
       detail:{name:'Thông Tin', icon:'address-card'},
     };
     const getIconByName = function(name, dicon='') {
@@ -80,6 +84,11 @@ class Home extends React.Component {
         <Tab.Screen name={tabs.store.name}>
           {props => <StoreTab {...props} realm={realm} />}
         </Tab.Screen>
+        {this.state.role==ROLE['user'] &&
+        <Tab.Screen name={tabs.calculate.name}>
+          {props => <CalculateTab {...props} realm={realm} />}
+        </Tab.Screen>
+        }
         <Tab.Screen name={tabs.search.name}>
          {props => <SearchTab {...props} realm={realm} />}
         </Tab.Screen>

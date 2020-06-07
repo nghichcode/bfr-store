@@ -1,6 +1,6 @@
 import React from 'react';
-import {ScrollView,Alert,View,Button,FlatList,TouchableOpacity,Linking,Platform} from 'react-native';
-import {Card,Text,ListItem,Overlay,Input} from 'react-native-elements';
+import {ScrollView, Alert, View, FlatList, TouchableOpacity, Linking, Platform, Dimensions} from 'react-native';
+import {Card, Text, ListItem, Overlay, Input, Image} from 'react-native-elements';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
@@ -10,6 +10,9 @@ import {parseForm,parseDate,crd2m} from '../../utils.js';
 import SearchBarATC from './search_bar_atc.js';
 import {getUser} from '../../models/model_utils.js';
 import {ROLE} from '../../models/models.js';
+
+const imgWidth = Math.floor(Dimensions.get('window').width/2 - 33);
+const imgHeight = Math.floor(imgWidth*4/3);
 
 class StoreTab extends React.Component {
   constructor(props) {
@@ -139,7 +142,7 @@ class StoreTab extends React.Component {
           </View>
         );
       }
-      const {store,user,user_location} = route.params;
+      const {store,user,user_location,store_list} = route.params;
       const store_owner = user?(user.last_name + ' ' + user.first_name):'';
       return (
         <ScrollView>
@@ -222,6 +225,44 @@ class StoreTab extends React.Component {
 
               </View>
 
+              {store_list && store_list.length > 0 &&
+              <View style={{marginBottom: 10}}>
+                <Text style={styles.text20c}>Sản phẩm khác của cửa hàng</Text>
+                <View>
+                  <FlatList
+                    keyExtractor={(item, index) => index.toString()} horizontal={true}
+                    data={store_list}
+                    renderItem={({item, index}) => (
+                      <TouchableOpacity
+                        onPress={() => {
+                          navigation.navigate('Tìm Kiếm',{product:item});
+                        }} >
+                      <View style={{ width: imgWidth-8, marginBottom:10}}>
+                        <Image source={{ uri: config.getImage(item.img_url) }} style={{ width: imgWidth-8, height: imgHeight }} />
+                        <View style={{flexDirection: 'row',justifyContent:'space-between',marginTop:10}}>
+                          <Text style={[styles.white, styles.bgred, styles.badge_txt]}>
+                            {(
+                              !user_location
+                                ? ((item.store_id) ? 'Không rõ' : 'SP gốc') : item.location
+                                ? crd2m(user_location, item.location) + 'm' : item.store_id ? 'Không rõ' : 'SP gốc'
+                            )}
+                          </Text>
+                          <Text style={{marginEnd:4}}>
+                            {item.is_approved > 0 && <Icon name='check' size={10} color='tomato'/>}
+                            {item.is_trusted > 0 && <Icon name='star' size={10} color='tomato'/>}
+                          </Text>
+                        </View>
+                        <Text>{item.product_name}</Text>
+                        <Text style={{color: '#9e9e9e'}}>{item.gtin_code}</Text>
+                        <Text style={{color: '#9e9e9e'}}>Giá: {item.price}</Text>
+                      </View>
+                      </TouchableOpacity>
+                    )}
+                  />
+                </View>
+              </View>
+              }
+
             </View>
           </Card>
           }
@@ -254,6 +295,7 @@ class StoreTab extends React.Component {
                 {item.exp && <Text style={{color:'#9e9e9e'}}>EXP: {
                   (item.exp.length>10)?parseDate(item.exp.slice(0,10)):item.exp
                 }</Text>}
+                <Text style={{color:'#9e9e9e'}}>Số lượng: {item.quantity}</Text>
               </View>}
               rightSubtitle={item.price}
               leftAvatar={{ source: { uri: config.getImage(item.img_url) } }}

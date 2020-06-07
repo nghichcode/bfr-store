@@ -49,16 +49,10 @@ class SearchTab extends React.Component {
     const oparams = this.props.route.params;
     const nparams = nxtProps.route.params;
     if( !oparams || (nparams && nparams.product
-      && (
-        nparams.product.store_product_id!=oparams.product.store_product_id
-        || nparams.product.product_id!=oparams.product.product_id
-        || nparams.product.id!=oparams.product.id
-      )
     ) ){
       if (nparams && nparams.product) {
         const {product} = nparams;
-        product.exp = (product.exp && product.exp.length>10)?parseDate(product.exp.slice(0,10)):product.exp;
-        this.setState({item:product,show_detail:true,search:product.product_name});
+        this.setState({item:product,show_detail:true,});
       }
     }
   }
@@ -89,14 +83,13 @@ class SearchTab extends React.Component {
     if (!item) {
       this.setState({show_detail:false,item:{}});
     } else {
-      item.exp = (item.exp && item.exp.length>10)?parseDate(item.exp.slice(0,10)):item.exp;
       this.setState({show_detail:true,item:item});
     }
   }
   fetchData = (search, fetchSuccess) => {
     const self = this;
     const params = {
-      limit: 100,
+      limit: 20,
       offset : 0,
       store_search:0,
       search : search,
@@ -121,6 +114,7 @@ class SearchTab extends React.Component {
       }
     })
     .catch((error) => {
+      fetchSuccess(null);
       self.setState({processing:false});
       Alert.alert("Lỗi", error.message,[{text: "OK", onPress: () => null}],{ cancelable: false });
     });
@@ -130,7 +124,7 @@ class SearchTab extends React.Component {
   handleAddProduct = (is_add) => {
     let {user,tokens,item,store} = this.state;
     if(
-      (item && item.store_product_id) &&
+      (item && item.gtin_code) &&
       ( !tokens || !tokens.refresh_token || (user.permission_id!=ROLE['user']) )
     ) {
       Alert.alert(
@@ -147,7 +141,6 @@ class SearchTab extends React.Component {
     const {item,add_data,store_product,image,tokens} = this.state;
     const maxs = config.max_size;
     const self = this;
-    // console.log('search.js:116',item);
     if(!item || (!item.store_product_id && !item.id)) {
       if(image && (image.width>maxs.width || image.height>maxs.height)) {
         Alert.alert("Lỗi", 'Kích thước ảnh không được vượt quá '+maxs.width+'x'+maxs.height+' pixel');
@@ -228,7 +221,6 @@ class SearchTab extends React.Component {
   }
 
   showStore = (item)=>{
-    const {navigation} = this.props;
     const {store} = this.state;
     if(!item.store_id || (store && store.storename)){return;}
     const params = {store_id:item.store_id};
@@ -248,12 +240,50 @@ class SearchTab extends React.Component {
       if(json.error) {
         Alert.alert("Lỗi", json.message+' : '+json.code,[{text: "OK"}],{ cancelable: false });
       } else {
-        navigation.navigate('Cửa Hàng',{store:json.store,user:json.user, user_location:self.state.user_location});
+        self.navWithList({store:json.store,user:json.user, user_location:self.state.user_location});
       }
     })
     .catch((error) => {
       Alert.alert("Lỗi", error.message,[{text: "OK", onPress: () => null}],{ cancelable: false });
     });
+  }
+  navWithList = ({store, user, user_location}) => {
+    const {navigation} = this.props;
+  	const self = this;
+  	if(!store.id){return;}
+
+    const params = {
+      limit: 20,offset : 0,store_search:1,store_id:store.id,search : '',
+    };
+
+    fetch(config.getLocation('search/search_store_product/'), {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        'Accept': "application/json",
+      },
+      method: 'POST',
+      body: parseForm(params),
+    })
+    .then((response) => {
+      return response.json();
+    })
+    .then((json) => {
+      if(json.error) {
+        Alert.alert("Lỗi", json.message+' : '+json.code,[{text: "OK"}],{ cancelable: false });
+      } else {
+        // self.setState({store_list:json.store_products.data});
+        navigation.navigate('Cửa Hàng',{
+          store,user,user_location,
+          store_list:json.store_products.data
+        });
+      }
+    })
+    .catch((error) => {
+      Alert.alert("Lỗi", error.message,[{text: "OK", onPress: () => null}],{ cancelable: false });
+    });
+  }
+  handleSelectItem = (item)=>{
+    this.setState({item});
   }
 
   render() {
@@ -263,15 +293,6 @@ class SearchTab extends React.Component {
       is_add,other_data,add_data,store_product,tokens,image,add_processing
     } = this.state;
     const {realm} = this.props;
-
-    if(!is_add && show_detail) {
-      return (
-        <DetailCard
-          backPress={ ()=>this.setState({item:{},is_add:false,show_detail:false}) }
-          item={item} store={store} showStore={this.showStore} user_location={user_location}
-        />
-      );
-    }
 
     return (
     <View style={{height:'100%'}}>
@@ -294,21 +315,20 @@ class SearchTab extends React.Component {
         />
       )}
 
-      <Overlay isVisible={is_add && !show_detail} fullScreen={true} overlayStyle={{padding:0}} animationType='fade'>
+      <Overlay isVisible={is_add} fullScreen={true} overlayStyle={{padding:0}} animationType='fade'>
+        <View style={{height:'100%'}}>
+        {add_processing &&
+          <View style={{
+            position:'absolute',top:0,left:0,backgroundColor:'#00000066',
+            width:'100%',height:'100%',flex:1,justifyContent:'center',zIndex:10
+          }}>
+            <Text style={{
+              textAlign:'center',backgroundColor:'#fff',borderRadius:10,
+              marginHorizontal:10,paddingVertical:20,fontWeight:'bold',
+            }}>Đang xử lý...</Text>
+          </View>
+        }
         <ScrollView>
-          {is_add &&
-          <View>
-          {add_processing &&
-            <View style={{
-              position:'absolute',top:0,left:0,backgroundColor:'#00000066',
-              width:'100%',height:'100%',flex:1,justifyContent:'center',zIndex:10
-            }}>
-              <Text style={{
-                textAlign:'center',backgroundColor:'#fff',borderRadius:10,
-                marginHorizontal:10,paddingVertical:20,fontWeight:'bold',
-              }}>Đang xử lý...</Text>
-            </View>
-          }
           {!is_scan && (item && (item.store_product_id||item.id) ) ?
             (<View>
               <Text style={{textAlign:'center',fontWeight:"bold",fontSize:20,color:"#fb5b5a",marginBottom:20}}>
@@ -341,7 +361,7 @@ class SearchTab extends React.Component {
                 }
                 onChangeText={text => this.setStoreProduct({exp:text})}/>
 
-              <View style={[styles.center]}>
+              <View style={[styles.center,styles.mx2p]}>
                 <TouchableOpacity onPress={this.addProduct} style={[
                   styles.roundBtn,styles.bgsuccess,styles.w100p,styles.mt40,
                   ]}>
@@ -479,31 +499,37 @@ class SearchTab extends React.Component {
             } }
           />
           }
-          </View>
-          }
         </ScrollView>
+        </View>
       </Overlay>
 
       {!is_scan &&
-      <View style={{
-        position:'absolute',right:16,bottom:16,alignItems:'center',justifyContent:'center',zIndex:9
-      }}
-      >
+      <View style={styles.fstRoundBtn}>
         <TouchableOpacity
         onPress={()=>this.handleAddProduct(true)}
-        style={{
-          alignItems:'center',justifyContent:'center',
-          width:60,height:60,borderRadius:30,
-          backgroundColor:'#3f51b5',
-          shadowColor: '#000000',shadowOffset:  { width: 10, height: 10 },
-          elevation: 6,shadowOpacity: 1,shadowRadius: 6,
-         }}>
+        style={styles.roundBlueBtn}>
           <Icon name='plus' size={40} color='#fff' />
         </TouchableOpacity>
       </View>
       }
 
-      <SearchBarATC realm={realm}
+      {(show_detail) &&
+        <DetailCard
+          backPress={ ()=>this.setState({item:{},is_add:false,show_detail:false}) }
+          handleSelectItem={this.handleSelectItem}
+          item={item} suggest_list={list} store={store} showStore={this.showStore} user_location={user_location}
+        >
+          <View style={styles.fstRoundBtn}>
+            <TouchableOpacity
+            onPress={()=>this.handleAddProduct(true)}
+            style={styles.roundBlueBtn}>
+              <Icon name='plus' size={40} color='#fff' />
+            </TouchableOpacity>
+          </View>
+        </DetailCard>
+      }
+      {(!show_detail) &&
+      <SearchBarATC realm={realm} search={search}
         fetchData={this.fetchData} resultData={(list) => {this.setState({list}); }}
         get_all={false} reload={false} onChangeText={(search) => {
           this.setState({search});this.handleResult(null);
@@ -512,10 +538,10 @@ class SearchTab extends React.Component {
           this.setState({is_scan});
         } }
       >
-        {search==='' && !is_scan && !(list && list.length>0) &&
+        {!is_scan && !(list && list.length>0) &&
         (
           <View style={{paddingTop: 5,}}>
-            <Text style={{textAlign:'center',color:'#fff'}}>Chưa có kết quả.</Text>
+            <Text style={{textAlign:'center',color:'#fff'}}>Không có kết quả.</Text>
           </View>
         )}
         {list && list.length>0 &&
@@ -557,6 +583,7 @@ class SearchTab extends React.Component {
         />
         }
       </SearchBarATC>
+      }
     </View>
     );
   }
