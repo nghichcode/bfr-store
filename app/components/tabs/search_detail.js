@@ -59,10 +59,7 @@ class DetailCard extends React.Component {
   render() {
     const {handleSelectItem} = this;
     const {store_list} = this.state;
-    const {
-      backPress,item,
-      store, showStore, user_location
-    } = this.props;
+    const {backPress,item, store, showStore, user_location} = this.props;
     let suggest_list = this.props.suggest_list.filter((it)=> JSON.stringify(it)!==JSON.stringify(item) );
     for(let k in item) { if(item[k]=='null') delete item[k];}
     const hasContact = item.city || item.street_address_one || item.street_address_two

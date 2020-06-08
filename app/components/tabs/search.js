@@ -328,8 +328,19 @@ class SearchTab extends React.Component {
             }}>Đang xử lý...</Text>
           </View>
         }
-        <ScrollView>
-          {!is_scan && (item && (item.store_product_id||item.id) ) ?
+        {is_scan &&
+          <SearchBarATC realm={realm}
+            onChangeText={null} show_scan={true}
+            get_all={false} reload={false}
+            barcodeRecognized={(barcodes, is_scan)=> {
+              this.setState({is_scan});
+              this.setProduct({gtin_code:barcodes.data});
+            } }
+          />
+        }
+        {!is_scan &&
+        <ScrollView style={{height:'100%'}}>
+          {(item && (item.store_product_id||item.id) ) ?
             (<View>
               <Text style={{textAlign:'center',fontWeight:"bold",fontSize:20,color:"#fb5b5a",marginBottom:20}}>
                 Thêm sản phẩm vào cửa hàng
@@ -489,17 +500,8 @@ class SearchTab extends React.Component {
               </View>
             </View>)
           }
-          {is_scan &&
-          <SearchBarATC realm={realm}
-            onChangeText={null} show_scan={true}
-            get_all={false} reload={false}
-            barcodeRecognized={(barcodes, is_scan)=> {
-              this.setState({is_scan});
-              this.setProduct({gtin_code:barcodes.data});
-            } }
-          />
-          }
         </ScrollView>
+        }
         </View>
       </Overlay>
 

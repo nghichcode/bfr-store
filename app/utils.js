@@ -14,8 +14,9 @@ function parseDate(date, locale=true){
       ldate = ldate[2]+'/'+ldate[1]+'/'+ldate[0];
     }
   } else {
-  	if(date){
+  	if(date && typeof date=='string'){
 	    ldate = date.split('/');
+	    if (ldate.length!=3) {return '';}
 	    ldate = (ldate[2]+'-'+ldate[1]+'-'+ldate[0]);
   	}
   }

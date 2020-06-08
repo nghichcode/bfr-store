@@ -43,34 +43,31 @@ class SearchBarATC extends React.Component {
     if(onChangeText) {onChangeText(text);}
 
     const count = text.split(' ').filter((it)=>it).length;
-    this.setState({ search:text,count_text:count,proccessing:true });
+    this.setState({ proccessing:true });
     if(count==0) {//Empty
       if (get_all) {//All
-        // console.log('search_bar_atc.js:44',count);
         if(fetchData) {fetchData(text.trim(), this.fetchSuccess);}
-      } else {resultData([]);this.setState({ proccessing:false });}
+      } else {resultData([]); this.setState({proccessing:false}); }
+      this.setState({ search:text,count_text:count});
       return;
     }
 
-    // if(count==count_text && search && text.includes(search)) {
-    //   let normal_txt = normalize(text);
-    //   let tmp_list = list.filter((it) => {
-    //     return it.product_name.includes(text)
-    //     ||it.gtin_code.includes(text)
-    //     ||it.product_name_alpha.includes(normal_txt);
-    //   });
-    //   this.setState({search: text,list: tmp_list});
-    //   resultData(tmp_list);
-    //   return;
-    // }
+    if(list.length>0 && count==count_text && search && text.includes(search)) {
+      let normal_txt = normalize(text);
+      let tmp_list = list.filter((it) => {
+        return it.product_name.includes(text)
+        ||it.gtin_code.includes(text)
+        ||it.product_name_alpha.includes(normal_txt);
+      });
+      this.setState({search:text,count_text:count,proccessing:false,list:tmp_list});
+      resultData(tmp_list);
+      return;
+    }
 
-    // this.setState({search: text});
-    // console.log('search_bar_atc.js:63',text);
-    this._debounce(text);
-    // if ( count!=count_text ) {//Has Change
-    //   this.setState({count_text:count});
-    //   if(fetchData) {fetchData(text.trim(), this.fetchSuccess);}
-    // }
+    if ( count!=count_text) {//Has Change
+      if(fetchData) {fetchData(text.trim(), this.fetchSuccess);}
+    } else {this._debounce(text);}
+    this.setState({search:text,count_text:count});
   }
   fetchSuccess = (list) => {
     if(!list){this.setState({proccessing:false});}
@@ -139,6 +136,7 @@ class SearchBarATC extends React.Component {
             }}
             inputContainerStyle={{backgroundColor: '#eee',height:'100%'}}
             onChangeText={this.onChangeText}
+            onFocus={()=>this.onChangeText(search?search:'')}
             value={ search }
           />
         </View>
