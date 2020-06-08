@@ -60,7 +60,6 @@ class DetailTab extends React.Component {
   }
 
   mapUserList = (user_data={}) => {
-    // console.log('detail.js:54',user_data);
     const user_list = {user:[],store:[],};
 
     const user = new UserObj();//Map user
@@ -105,7 +104,6 @@ class DetailTab extends React.Component {
       user:user_data.user?user.properties:null,store:user_data.store?store.properties:null
     }});
     this.setState({user_list});
-    // console.log('detail.js:2',user_list);
   }
 
   enableGPS = () => {
@@ -153,14 +151,10 @@ class DetailTab extends React.Component {
 
     const params = {};
     if(user_data && user_data.user) {
-      for(let k in user_data.user) {
-        params[k]=user_data.user[k];
-      }
+      for(let k in user_data.user) {params[k]=user_data.user[k];}
     }
     if(user_data && user_data.store) {
-      for(let k in user_data.store) {
-        params[k]=user_data.store[k];
-      }
+      for(let k in user_data.store) {params[k]=user_data.store[k];}
     }
 
     if(image && image.type && image.base64){
@@ -199,9 +193,6 @@ class DetailTab extends React.Component {
       console.log('e',error);
       self.setState({loading:false});
     });
-
-    // console.log(user_data);
-    // this.setState({is_edit:!is_edit});
   }
   onChangeText = (role,name,txt) => {
     const {user_data} = this.state;

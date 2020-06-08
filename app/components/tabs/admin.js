@@ -64,7 +64,7 @@ class AdminTab extends React.Component {
     const params = {
       limit: 20,
       offset : 0,
-      approve_status:approve_status?APPROVE_STATUS.valid:APPROVE_STATUS.pending,show_action:false,
+      approve_status:approve_status?APPROVE_STATUS.approved:APPROVE_STATUS.pending,show_action:false,
       search : search,
     };
 
@@ -340,6 +340,11 @@ class AdminTab extends React.Component {
             labelStyle={styles.orange} containerStyle={styles.mb5}
             value={edit_item.description}
             onChangeText={text => this.setProduct({description:text})}/>
+          <Input
+            label="Tên công ty" placeholder="..."
+            labelStyle={styles.orange} containerStyle={styles.mb5}
+            value={edit_item.party_name=='null'?'':edit_item.party_name}
+            onChangeText={text => this.setProduct({party_name:text})}/>
 
           <CheckBox
             title='Thông tin liên hệ'
@@ -360,11 +365,6 @@ class AdminTab extends React.Component {
               value={edit_item.phone=='null'?'':edit_item.phone}
               onChangeText={text => this.setProduct({phone:text})}/>
             <Input
-              label="Tên công ty" placeholder="..."
-              labelStyle={styles.orange} containerStyle={styles.mb5}
-              value={edit_item.party_name=='null'?'':edit_item.party_name}
-              onChangeText={text => this.setProduct({party_name:text})}/>
-            <Input
               label="Thành phố" placeholder="..."
               labelStyle={styles.orange} containerStyle={styles.mb5}
               value={edit_item.city=='null'?'':edit_item.city}
@@ -382,7 +382,7 @@ class AdminTab extends React.Component {
             <Input
               label="Địa chỉ sản xuất 3" placeholder="..."
               labelStyle={styles.orange} containerStyle={styles.mb5}
-              value={edit_item.street_address_two=='null'?'':edit_item.street_address_two}
+              value={edit_item.street_address_three=='null'?'':edit_item.street_address_three}
               onChangeText={text => this.setProduct({street_address_three:text})}/>
             
           </View>

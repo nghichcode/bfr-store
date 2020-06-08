@@ -32,12 +32,7 @@ class CalculateTab extends React.Component {
     const {tokens,user} = this.state;
     const self = this;
 
-    const params = {
-      limit: 100,
-      offset : 0,
-      store_search:1,
-      search : search,
-    };
+    const params = {limit: 100,offset : 0,store_search:1,search : search,};
 
     fetch(config.getLocation('search/search_store_product/'), {
       headers: {
@@ -48,9 +43,7 @@ class CalculateTab extends React.Component {
       method: 'POST',
       body: parseForm(params),
     })
-    .then((response) => {
-      return response.json();
-    })
+    .then((response) => {return response.json();})
     .then((json) => {
       if(json.error) {
         Alert.alert("Lỗi", json.message+' : '+json.code,[{text: "OK"}],{ cancelable: false });
@@ -65,10 +58,9 @@ class CalculateTab extends React.Component {
   }
 
   insertList = (item) => {
-    item.sold_out = 1;
+    item.sold_out = item.quantity>0?1:0;
     const self = this;
     const {list,sell_list} = this.state;
-    // item.exp = (item.exp && item.exp.length>10)?parseDate(item.exp.slice(0,10)):item.exp;
     if(sell_list.find(it=>it.store_product_id==item.store_product_id)){
       Alert.alert("Lỗi", "Sản phẩm đã tồn tại.");return;
     }
@@ -86,7 +78,6 @@ class CalculateTab extends React.Component {
         if(item.sold_out>=0){sell_list_tmp.push(item);}
       } else {sell_list_tmp.push(sell_list[i]);}
     }
-    // this.setState({sell_list:sell_list.map((it)=>it.store_product_id==item.store_product_id?item:it) });
     this.setState({sell_list:sell_list_tmp});
   }
 
@@ -102,26 +93,17 @@ class CalculateTab extends React.Component {
           sold_id:sold.store_product_id, sold_quantity:sold.quantity-sold.sold_out,
         });
       }
-      // return {sold_id:it.store_product_id,sold_quantity:it.sold_out};
     }
 
-    const params = {
-      json: JSON.stringify(sell_list_tmp)
-    };
-    console.log('p::',params);
-
+    const params = {json: JSON.stringify(sell_list_tmp)};
     fetch(config.getLocation('store/update_list_product/'), {
       headers: {
-        'Content-Type': 'multipart/form-data',
-        'Accept': "application/json",
-        'authorization': tokens.token,
+        'Content-Type': 'multipart/form-data','Accept': "application/json",'authorization': tokens.token,
       },
       method: 'POST',
       body: parseForm(params),
     })
-    .then((response) => {
-      return response.json();
-    })
+    .then((response) => {return response.json();})
     .then((json) => {
       this.setState({loading:false});
       if(json.error) {
@@ -247,7 +229,6 @@ class CalculateTab extends React.Component {
           </View>
           }
         />
-
         </View>
         }
 

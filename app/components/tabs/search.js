@@ -428,6 +428,11 @@ class SearchTab extends React.Component {
                 labelStyle={styles.orange} containerStyle={styles.mb5}
                 value={add_data.description}
                 onChangeText={text => this.setProduct({description:text})}/>
+              <Input
+                label="Tên công ty" placeholder="..."
+                labelStyle={styles.orange} containerStyle={styles.mb5}
+                value={add_data.party_name}
+                onChangeText={text => this.setProduct({party_name:text})}/>
 
               <CheckBox
                 title='Thông tin liên hệ'
@@ -447,11 +452,6 @@ class SearchTab extends React.Component {
                   labelStyle={styles.orange} containerStyle={styles.mb5}
                   value={add_data.phone}
                   onChangeText={text => this.setProduct({phone:text})}/>
-                <Input
-                  label="Tên công ty" placeholder="..."
-                  labelStyle={styles.orange} containerStyle={styles.mb5}
-                  value={add_data.party_name}
-                  onChangeText={text => this.setProduct({party_name:text})}/>
                 <Input
                   label="Thành phố" placeholder="..."
                   labelStyle={styles.orange} containerStyle={styles.mb5}
