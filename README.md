@@ -55,6 +55,7 @@ Mọi món hàng được đăng công khai sẽ được kiểm duyệt bởi c
 | 1 | Nguyễn Văn Diên | Mô tả chi tiết ứng dụng, thiết kế cơ sở dữ liệu (MYSQL), chức năng ứng dụng.<br/> Xử lý mobile (React Native), tạo cơ chế xác thực (JWT) và kết nối với PHP server.<br/> Quản lý, Deploy lên git, tích hợp vào server thật. |
 | 2 | Lê Duy Hưng | Tìm hiểu về PHP backend, kiến trúc cơ bản của mobile, cơ chế kết nối backend với mobile.<br/> Xử lý phần backend, để tạo ra các chức năng xử lý tại server tương ứng với mobile.|
 | 3 | Ninh Thị Nhật Lệ | Tìm hiểu, thiết kế sơ bộ giao diện mobile. Tìm kiếm tập dữ liệu thực tế để nhập vào hệ thống.<br> Kiểm tra, rà soát các lỗi của phần mềm. |
+
 .
 
 .
