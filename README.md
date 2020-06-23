@@ -44,7 +44,7 @@ Mọi món hàng được đăng công khai sẽ được kiểm duyệt bởi c
 | 4 | Trang Admin | Admin quyền lấy token để tạo tài khoản admin khác; sửa, xóa thông tin hàng hóa; kiểm duyệt thủ công thông tin hàng hóa. |
 | 5 | Trang tính toán | Chủ cửa hàng tìm kiếm/quét Barcode để nhập vào các món hàng để tính toán tổng số tiền phục vụ cho việc bán hàng. |
 | 6 | Trang cửa hàng (dành cho chủ cửa hàng) | Chủ cửa hàng có quyền tìm kiếm, xem, sửa (thông tin, số lượng hàng), xóa hàng hóa có trong cửa hàng. |
-| 7 | Trang cửa hàng (dành cho guest và admin) | Hiển thị thông tin cửa hàng. |
+| 7 | Trang cửa hàng (dành cho guest và admin) | Hiển thị thông tin cửa hàng (có nút bấm để mở vị trí cửa hàng trên bản đồ). |
 | 8 | Trang tìm kiếm (mọi user) | Mọi user có quyền tìm kiếm và thêm thông tin hàng hóa. Khi tìm kiếm thành công, sẽ hiển thị  thông tin chung cũng như thông tin riêng đối với từng cửa hàng đã public thông tin và nút xem thông tin chi tiết cửa hàng đó. |
 | 9 | Thông tin tài khoản | Dùng để xem/cập nhật thông tin tài khoản hoặc "Đăng xuất" khỏi hệ thống.<br/> Cửa hàng có quyền hiển thị/ẩn các thông tin như: thông các sản phẩm, vị trí...  |
 
@@ -52,9 +52,9 @@ Mọi món hàng được đăng công khai sẽ được kiểm duyệt bởi c
 ##### Phân công công việc:
 |STT| Tên thành viên | Công việc |
 |---|-------|-----|
-| 1 | Nguyễn Văn Diên | Mô tả chi tiết ứng dụng, thiết kế cơ sở dữ liệu (MYSQL), chức năng ứng dụng.<br/> Xử lý mobile, tạo cơ chế xác thực và kết nối với PHP server.<br/> Deploy lên git, tích hợp vào server thật. |
-| 2 | Lê Duy Hưng | Tìm hiểu về PHP backend, cơ chế kết nối backend với mobile.<br/> Xử lý phần backend, để tạo ra các chức năng xử lý tại server tương ứng với mobile.|
-| 3 | Ninh Thị Nhật Lệ | Tìm kiếm tập dữ liệu thực tế để nhập vào hệ thống.<br> Kiểm tra, già soát các lỗi của phần mềm. |
+| 1 | Nguyễn Văn Diên | Mô tả chi tiết ứng dụng, thiết kế cơ sở dữ liệu (MYSQL), chức năng ứng dụng.<br/> Xử lý mobile (React Native), tạo cơ chế xác thực (JWT) và kết nối với PHP server.<br/> Quản lý, Deploy lên git, tích hợp vào server thật. |
+| 2 | Lê Duy Hưng | Tìm hiểu về PHP backend, kiến trúc cơ bản của mobile, cơ chế kết nối backend với mobile.<br/> Xử lý phần backend, để tạo ra các chức năng xử lý tại server tương ứng với mobile.|
+| 3 | Ninh Thị Nhật Lệ | Tìm hiểu, thiết kế sơ bộ giao diện mobile. Tìm kiếm tập dữ liệu thực tế để nhập vào hệ thống.<br> Kiểm tra, rà soát các lỗi của phần mềm. |
 .
 
 .
